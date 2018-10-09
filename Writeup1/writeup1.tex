@@ -16,7 +16,9 @@
 \usepackage{pstricks, pst-node}
 
 \usepackage{geometry}
-\geometry{textheight=8.5in, textwidth=6in}
+
+% set margins to 0.75in
+\geometry{textheight=9.5in, textwidth=7in} %letter is 11 x 8.5 w/out margins
 
 %random comment
 
@@ -49,30 +51,18 @@
 
 \begin{document}
 
-\tableofcontents
+%\tableofcontents
 
-%input the pygmentized output of mt19937ar.c, using a (hopefully) unique name
-%this file only exists at compile time. Feel free to change that.
+\section{WriteUp 1}
 
+\subsection{Command Log}
 
-\section{Section 1}
-\subsection{blah}
-\subsubsection{yada yada}
-This is a paragraph in \LaTeX.
+\subsection{qemu Explanation}
 
-This is a new paragraph.
+\subsection{Concurrency}
 
-\begin{itemize}
-\item \begin{equation}
-    \label{eq1}
-    \int_0^\pi \sin(x) \partial x
-    \end{equation}
-\item $\backslash$ As seen in Eq. \ref{eq1}, blah blah blah
-\end{itemize}
+\subsection{Version Control}
 
-\emph{\textbf{\color{red}This is italicized and red}}
-
-\section*{Appendix 1: Source Code}
-\input{__mt19937ar.c.tex}
+\subsection{Work Log}
 
 \end{document}
