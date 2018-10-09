@@ -1,0 +1,6 @@
+/bzImage-qemux86.bin
+/config-3.19.2-yocto-standard
+/core-image-lsb-sdk-qemux86.ext4
+/environment-setup-i586-poky-linux
+/environment-setup-i586-poky-linux.csh
+/linux-yocto-3.19
