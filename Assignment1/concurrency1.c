@@ -4,7 +4,7 @@
  * - David Jansen
  * - Yetan Brodsky
  *
- * This program ends when all, NUM_JOBS are processed
+ * This program never ends. Use CTRL-C to terminate.
  *
  * Sources:
  * - checking for availability of rdrand instruction was obtained from rdrand_test.c
@@ -21,7 +21,7 @@
 #include <string.h>
 #include <limits.h>
 
-#define NUM_JOBS 256
+#define MAX_JOBS 5
 
 /* Period parameters */
 #define N 624
@@ -43,6 +43,7 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 Job* jobs;
 unsigned int jhead;
 unsigned int jtail;
+unsigned int jtotal;
 int use_rdrand;
 
 // rdrand
@@ -116,26 +117,35 @@ unsigned long genrand_int32(void)
 
 void* producer(void *tid) {
     while (1) {
+        // Acquire mutex
         pthread_mutex_lock(&mutex);
-        if (jtail < NUM_JOBS) {
-            if (use_rdrand) {
-                rdrand(&(jobs[jtail].m_num), 0, 1000);
-                rdrand(&(jobs[jtail].m_wait), 3, 7);
-            }
-            else {
-                jobs[jtail].m_num = genrand_int32() % 1000;
-                jobs[jtail].m_wait = 3 + (genrand_int32() % (8 - 3));
-            }
-            fprintf(stdout, "CREATE Job %d: num %d, wait %d\n", jtail, jobs[jtail].m_num, jobs[jtail].m_wait);
-            fflush(stdout);
-            ++jtail;
+        // Continue if full
+        int jnext = jtail + 1;
+        if (jnext == MAX_JOBS) jnext = 0;
+        if (jnext == jhead) {
             pthread_mutex_unlock(&mutex);
-            usleep(500000); // wait some time before generating next job for proof of concurrency
+            continue;
+        }
+        // Create job
+        if (use_rdrand) {
+            rdrand(&(jobs[jtail].m_num), 0, 1000);
+            rdrand(&(jobs[jtail].m_wait), 3, 7);
         }
         else {
-            pthread_mutex_unlock(&mutex);
-            break;
+            jobs[jtail].m_num = genrand_int32() % 1000;
+            jobs[jtail].m_wait = 3 + (genrand_int32() % (8 - 3));
         }
+        // Track total jobs
+        ++jtotal;
+        // Display
+        fprintf(stdout, "PRODUCE Job %d: num %d, wait %d\n", jtotal, jobs[jtail].m_num, jobs[jtail].m_wait);
+        fflush(stdout);
+        // Advance jtail
+        jtail = jnext;
+        // Release mutex
+        pthread_mutex_unlock(&mutex);
+        // Wait some time before generating next job for proof of concurrency
+        usleep(500000);
     }
 
     return 0;
@@ -143,38 +153,35 @@ void* producer(void *tid) {
 
 void* consumer(void *tid) {
     int dt;
-    int proc = 1;
 
-    while (proc) {
+    while (1) {
         dt = 0;
-
+        // Acquire mutex
         pthread_mutex_lock(&mutex);
-
-        if (jhead < jtail) {
-            fprintf(stdout, "PROC Job %d: num %d, wait %d\n", jhead, jobs[jhead].m_num, jobs[jhead].m_wait);
+        // Process job if not empty
+        if (jhead != jtail) {
+            // Display
+            fprintf(stdout, "CONSUME Job %d: num %d, wait %d\n", jhead, jobs[jhead].m_num, jobs[jhead].m_wait);
             fflush(stdout);
+            // Save job time to dt
             dt = jobs[jhead].m_wait;
+            // Advance jhead
             ++jhead;
-            if (jhead == NUM_JOBS)
-                proc = 0;
+            if (jhead == MAX_JOBS) jhead = 0;
         }
-        else if (jhead != 0) {
-            jhead = 0;
-            jtail = 0;
-        }
-
+        // Release mutex
         pthread_mutex_unlock(&mutex);
-
-        if (dt)
-            sleep(dt);
+        // Sleep for dt
+        if (dt) sleep(dt);
     }
     return 0;
 }
 
 int main(int argc, char* argv[]) {
-    jobs = (Job*)malloc(sizeof(Job) * NUM_JOBS);
+    jobs = (Job*)malloc(sizeof(Job) * MAX_JOBS);
     jhead = 0;
     jtail = 0;
+    jtotal = 0;
 
     unsigned int eax;
     unsigned int ebx;
