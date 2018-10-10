@@ -1,3 +1,5 @@
+#LATEX	= /usr/local/apps/tex_live/current/bin/x86_64-linux/latex -shell-escape
+#LATEX	= /usr/bin/latex -shell-escape
 LATEX	= latex -shell-escape
 BIBTEX	= bibtex
 DVIPS	= dvips
@@ -17,7 +19,7 @@ ps: $(PSF)
 
 $(TRG): %.dvi: %.tex $(EXAMPLES)
 	#one way of including source code is to use pygments
-	pygmentize -f latex -o __${EXAMPLES}.tex ${EXAMPLES}
+	#pygmentize -f latex -o __${EXAMPLES}.tex ${EXAMPLES}
 	#requires that you \include{pygments.tex} in your preamble
 
 	$(LATEX) $<
@@ -25,7 +27,7 @@ $(TRG): %.dvi: %.tex $(EXAMPLES)
 	$(LATEX) $<
 	$(LATEX) $<
 	#remove the pygmentized output to avoid cluttering up the directory
-	#rm __${EXAMPLES}.tex
+	rm __${EXAMPLES}.tex
 
 
 $(PSF):%.ps: %.dvi
