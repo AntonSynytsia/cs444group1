@@ -21,7 +21,7 @@
 #include <string.h>
 #include <limits.h>
 
-#define MAX_JOBS 5
+#define MAX_JOBS 20
 
 /* Period parameters */
 #define N 624
@@ -43,7 +43,8 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 Job* jobs;
 unsigned int jhead;
 unsigned int jtail;
-unsigned int jtotal;
+unsigned int jtotal_produced;
+unsigned int jtotal_consumed;
 int use_rdrand;
 
 // rdrand
@@ -136,9 +137,9 @@ void* producer(void *tid) {
             jobs[jtail].m_wait = 3 + (genrand_int32() % (8 - 3));
         }
         // Track total jobs
-        ++jtotal;
+        ++jtotal_produced;
         // Display
-        fprintf(stdout, "PRODUCE Job %d: num %d, wait %d\n", jtotal, jobs[jtail].m_num, jobs[jtail].m_wait);
+        fprintf(stdout, "PRODUCE Job %d: num %d, wait %d\n", jtotal_produced, jobs[jtail].m_num, jobs[jtail].m_wait);
         fflush(stdout);
         // Advance jtail
         jtail = jnext;
@@ -160,8 +161,9 @@ void* consumer(void *tid) {
         pthread_mutex_lock(&mutex);
         // Process job if not empty
         if (jhead != jtail) {
+            ++jtotal_consumed;
             // Display
-            fprintf(stdout, "CONSUME Job %d: num %d, wait %d\n", jhead, jobs[jhead].m_num, jobs[jhead].m_wait);
+            fprintf(stdout, "CONSUME Job %d: num %d, wait %d\n", jtotal_consumed, jobs[jhead].m_num, jobs[jhead].m_wait);
             fflush(stdout);
             // Save job time to dt
             dt = jobs[jhead].m_wait;
@@ -181,7 +183,8 @@ int main(int argc, char* argv[]) {
     jobs = (Job*)malloc(sizeof(Job) * MAX_JOBS);
     jhead = 0;
     jtail = 0;
-    jtotal = 0;
+    jtotal_produced = 0;
+    jtotal_consumed = 0;
 
     unsigned int eax;
     unsigned int ebx;
