@@ -92,8 +92,37 @@ Start another terminal in OS2 and run the following commands:\\
 8). {\textbf{-localtime:}} ??\\
 9). {\textbf{--no-reboot:}} exit instead of rebooting\\
 10). {\textbf{--append "root=/dev/vda rw console=ttyS0 debug":}} ??\\\\
+
 \subsection{Concurrency}
-Anton
+\begin{enumerate}
+\item The objective of concurrency is to understand how to syncrenize operations between two tasks.
+\item We use pthreads for multithreading and mutexes for critical sections. One buffer, two threads (plus the main thread), and one mutex one mutex played a role in producing and consuming jobs. Details regarding the role of each are described below:
+\begin{description}
+\item[Buffer] The buffer is circular FIFO queue, containing jobs awaiting to be consumed. The buffer's starting and ending points are marked by \texttt{jhead} and \texttt{jtail} variables. Produced jobs are appended to the circular queue, incrementing and wrapping \texttt{jtail}. Consumed jobs are removed out of the cicrular queue, incrementing and wrapping \texttt{jhead}. \\\\
+The buffer has a limit defined by \texttt{NUM_JOBS} preprocessor. Once \texttt{jtail} reaches the limit, that is one less than \texttt{jhead}, the producer stops creating jobs until space becomes available again.
+\item[Producer] The producer thread is a continuous while loop, which does the following:
+\begin{enumerate}
+\item Acquire mutex via \texttt{pthread_mutex_lock}.\
+\item Check if the jobs queue is not full. If the queue is full, simply unlock the mutex and continue the loop.
+\item Create a job with randomized wait time and number values. The randomization is achieved by \texttt{rdrand} if supported by platform or \texttt{mt19937} if not.
+\item Append job to the queue, incrementing and wrapping \texttt{jtail}.
+\item Release the mutex via \texttt{pthread_mitex_unlock}.
+\end{enumerate}
+\item[Consumer] The consumer thread is also a continuous while loop, which does the following:
+\begin{enumerate}
+\item Acquire mutex
+\item Check if queue is not empty. If empty, release the mutex and continue the loop.
+\item Get job at \texttt{jhead}.
+\item Print out the number value of job.
+\item Copy job wait time to a seperate variable, \texttt{dt}.
+\item Increment and wrap \texttt{jhead}.
+\item Release the mutex
+\item Sleep for await time indicated at \texttt{dt}.
+\end{enumerate}
+\end{description}
+\item 
+\item Although I had previous experiance with mutexes and multithreading, I did learn that concurrency can as well be achived with semaphores.
+\end{enumerate}
 
 \subsection{Version Control}
 
