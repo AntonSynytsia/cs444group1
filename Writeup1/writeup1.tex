@@ -48,7 +48,7 @@
 
 \section{WriteUp 1}
 
-\iffalse
+%\iffalse
 
 \subsection{Command Log}
 {\bfseries Logging into OS2}\\
@@ -95,19 +95,19 @@ Start another terminal in OS2 and run the following commands:\\
 9). {\textbf{--no-reboot:}} exit instead of rebooting\\
 10). {\textbf{--append "root=/dev/vda rw console=ttyS0 debug":}} ??\\\\
 
-\fi
+%\fi
 
 \subsection{Concurrency}
 \begin{enumerate}
-\item The objective of concurrency is to understand how to syncrenize operations between two tasks.
-\item We use pthreads for multithreading and mutexes for critical sections. One buffer, two threads (plus the main thread), and one mutex one mutex played a role in producing and consuming jobs. Details regarding the role of each are described below:
+\item The objective of concurrency is to understand how to synchronize operations between two tasks.
+\item We use pthreads for multi-threading and mutexes for critical sections. One buffer, two threads (plus the main thread), and one mutex are involved in producing and consuming jobs. Details regarding the role of each are described below:
 \begin{description}
-\item[Buffer] The buffer is circular FIFO queue, containing jobs awaiting to be consumed. The buffer's starting and ending points are marked by \texttt{jhead} and \texttt{jtail} variables. Produced jobs are appended to the circular queue, incrementing and wrapping \texttt{jtail}. Consumed jobs are removed out of the cicrular queue, incrementing and wrapping \texttt{jhead}.
+\item[Buffer] The buffer is a circular FIFO queue, containing jobs awaiting to be consumed. The buffer's starting and ending points are marked by \texttt{jhead} and \texttt{jtail} variables. Produced jobs are appended to the circular queue, incrementing and wrapping \texttt{jtail}. Consumed jobs are removed out of the cicrular queue, incrementing and wrapping \texttt{jhead}.
 
 The buffer has a limit defined by \texttt{NUM\_JOBS} preprocessor. Once \texttt{jtail} reaches the limit, that is one less than \texttt{jhead}, the producer stops creating jobs until space becomes available again.
 \item[Producer] The producer thread is a continuous while loop, which does the following:
 \begin{enumerate}
-\item Acquire mutex via \texttt{pthread\_mutex\_lock}.\
+\item Acquire mutex via \texttt{pthread\_mutex\_lock}.
 \item Check if the jobs queue is not full. If the queue is full, simply unlock the mutex and continue the loop.
 \item Create a job with randomized wait time and number values. The randomization is achieved by \texttt{rdrand} if supported by platform or \texttt{mt19937} if not.
 \item Append job to the queue, incrementing and wrapping \texttt{jtail}.
@@ -125,8 +125,8 @@ The buffer has a limit defined by \texttt{NUM\_JOBS} preprocessor. Once \texttt{
 \item Sleep for await time indicated at \texttt{dt}.
 \end{enumerate}
 \end{description}
-\item Hi 
-\item Although I had previous experiance with mutexes and multithreading, I did learn that concurrency can as well be achived with semaphores.
+\item In order to validate concurrency, we printed out every time a job was produced and every time a job was about to be consumed. A small delay was added after producing a job, to ensure that a job can be consumed while jobs are being produced.\\\\Once the buffer fills up, the producer waits for consumer to consume a job.
+\item Although I, Anton, had previous experience with mutexes and multithreading, I did learn that concurrency can as well be achieved with semaphores.
 \end{enumerate}
 
 \subsection{Version Control}

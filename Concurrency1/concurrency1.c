@@ -21,7 +21,7 @@
 #include <string.h>
 #include <limits.h>
 
-#define MAX_JOBS 20
+#define MAX_JOBS 100
 
 /* Period parameters */
 #define N 624
@@ -163,7 +163,7 @@ void* consumer(void *tid) {
         if (jhead != jtail) {
             ++jtotal_consumed;
             // Display
-            fprintf(stdout, "CONSUME Job %d: num %d, wait %d\n", jtotal_consumed, jobs[jhead].m_num, jobs[jhead].m_wait);
+            fprintf(stdout, "CONSUME Job %d: num %d, waiting %d seconds before consuming next job...\n", jtotal_consumed, jobs[jhead].m_num, jobs[jhead].m_wait);
             fflush(stdout);
             // Save job time to dt
             dt = jobs[jhead].m_wait;
@@ -180,16 +180,22 @@ void* consumer(void *tid) {
 }
 
 int main(int argc, char* argv[]) {
+    // Declare variables
+    unsigned int eax;
+    unsigned int ebx;
+    unsigned int ecx;
+    unsigned int edx;
+    pthread_t th1;
+    pthread_t th2;
+
+    // Assign global variables
     jobs = (Job*)malloc(sizeof(Job) * MAX_JOBS);
     jhead = 0;
     jtail = 0;
     jtotal_produced = 0;
     jtotal_consumed = 0;
 
-    unsigned int eax;
-    unsigned int ebx;
-    unsigned int ecx;
-    unsigned int edx;
+    // Determine if rdrand is supported
     eax = 0x01;
 
     __asm__ __volatile__(
@@ -209,16 +215,17 @@ int main(int argc, char* argv[]) {
         fprintf(stdout, "Using mt19937\n");
     }
 
-    pthread_t th1;
-    pthread_t th2;
-
+    // Create consumer and producer threads
     pthread_create(&th1, NULL, consumer, NULL);
     pthread_create(&th2, NULL, producer, NULL);
 
+    // Join
     pthread_join(th1, NULL);
     pthread_join(th2, NULL);
 
+    // Destroy mutex
     pthread_mutex_destroy(&mutex);
 
+    // Return success
     return 0;
 }
