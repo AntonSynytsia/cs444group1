@@ -5,9 +5,9 @@ Eytan Brodsky<br/>
 David Jansen<br/>
 
 ## Assignment 1
-### Compiling Concurrency:
+### Compiling Concurrency
 ```bash
-cd Concurrency1
+cd Concurrency1/
 make
 
 # optional cleanup
@@ -16,7 +16,7 @@ make clean
 
 ### Compiling Writeup
 ```bash
-cd Writeup1
+cd Writeup1/
 make
 
 # optional cleanup
