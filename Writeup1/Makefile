@@ -23,11 +23,11 @@ $(TRG): %.dvi: %.tex $(EXAMPLES)
 	#requires that you \include{pygments.tex} in your preamble
 
 	$(LATEX) $<
-	$(BIBTEX) $(<:%.tex=%)
+	#$(BIBTEX) $(<:%.tex=%)
 	$(LATEX) $<
 	$(LATEX) $<
 	#remove the pygmentized output to avoid cluttering up the directory
-	rm __${EXAMPLES}.tex
+	#rm __${EXAMPLES}.tex
 
 
 $(PSF):%.ps: %.dvi

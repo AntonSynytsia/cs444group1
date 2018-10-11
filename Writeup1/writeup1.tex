@@ -125,7 +125,7 @@ The buffer has a limit defined by \texttt{NUM\_JOBS} preprocessor. Once \texttt{
 \item Sleep for await time indicated at \texttt{dt}.
 \end{enumerate}
 \end{description}
-\item In order to validate concurrency, we printed out every time a job was produced and every time a job was about to be consumed. A small delay was added after producing a job, to ensure that a job can be consumed while jobs are being produced.\\\\Once the buffer fills up, the producer waits for consumer to consume a job.
+\item In order to validate concurrency, we printed out every time a job was produced and every time a job was about to be consumed. A small delay was added after producing a job, to ensure that a job can be consumed while jobs are being produced. Once the buffer fills up, the producer waits for consumer to consume a job.
 \item Although I, Anton, had previous experience with mutexes and multithreading, I did learn that concurrency can as well be achieved with semaphores.
 \end{enumerate}
 
