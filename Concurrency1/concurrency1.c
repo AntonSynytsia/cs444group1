@@ -2,7 +2,7 @@
  * Concurrency 1
  * - Anton Synytsia
  * - David Jansen
- * - Yetan Brodsky
+ * - Eytan Brodsky
  *
  * This program never ends. Use CTRL-C to terminate.
  *
