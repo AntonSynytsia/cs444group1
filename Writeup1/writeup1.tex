@@ -54,48 +54,65 @@
 
 \subsection{Command Log}
 {\bfseries Logging into OS2}\\
-1). ssh os2.engr.oregonstate.edu\\\\
+\begin{enumerate}
+\item ssh os2.engr.oregonstate.edu\\\\
+\end{enumerate}
 {\bfseries Creating Group Folder}\\
-1). cd /scratch/fall/2018\\
-2). mkdir group1\\\\
+\begin{enumerate}
+\item cd /scratch/fall/2018\\
+\item mkdir group1\\\\
+\end{enumerate}
 {\bfseries Cloning Repository}\\
-1). cd /scratch/fall2018/group1/\\
-2). git clone git://git.yoctoproject.org/linux-yocto-3.19\\
-3). git checkout tags/v3.19.2\\\\
+\begin{enumerate}
+\item cd /scratch/fall2018/group1/\\
+\item git clone git://git.yoctoproject.org/linux-yocto-3.19\\
+\item git checkout tags/v3.19.2\\\\
+\end{enumerate}
 {\bfseries Copying Files}\\
-1). cp -R /scratch/files. /scratch/fall2018/group1\\\\
+\begin{enumerate}
+\item cp -R /scratch/files. /scratch/fall2018/group1\\\\
+\end{enumerate}
 {\bfseries Setting Up Environment}\\
-1). cd /scratch/fall2018/group1/\\
-2). source environment-setup-i586-poky-linux\\
-3). qemu-system-i386 -gdb tcp::5501 -S -nographic -kernel bzImage-qemux86.bin -drive\\ file=core-image-lsb-sdk-qemux86.ext4,if=virtio -enable-kvm -net none -usb -localtime\\
+\begin{enumerate}
+\item cd /scratch/fall2018/group1/\\
+\item source environment-setup-i586-poky-linux\\
+\item qemu-system-i386 -gdb tcp::5501 -S -nographic -kernel bzImage-qemux86.bin -drive\\ file=core-image-lsb-sdk-qemux86.ext4,if=virtio -enable-kvm -net none -usb -localtime\\
 --no-reboot --append "root=/dev/vda rw console=ttyS0 debug"\\
-
-This will hang, which it should; to unhang the process, follow the steps below.
+\end{enumerate}
+This will hang, which it should; to unhang the process, follow the steps below.\\
 
 {\bfseries Debugging}\\
-Start another terminal in OS2 and run the following commands:\\
-1). gdb\\
-2). target remote tcp:5501\\
-3). continue\\\\
+\begin{enumerate}
+\item Start another terminal in OS2 and run the following commands:\\
+\item gdb\\
+\item target remote tcp:5501\\
+\item continue\\\\
+\end{enumerate}
 {\bfseries Part 2: Testing Toolchain}\\
-1). cd /scratch/fall2018/group1/linux-yocto-3.19\\
-2). cp /scratch/files/config-3.19.2-yocto-standard .config\\
-2). make -j4 all\\\\
+\begin{enumerate}
+\item cd /scratch/fall2018/group1/linux-yocto-3.19\\
+\item cp /scratch/files/config-3.19.2-yocto-standard .config\\
+\item make -j4 all\\\\
+\end{enumerate}
 {\bfseries Compiling Latex}\\
-1). cd /scratch/fall2018/group1/Writeup1\\
-2). make TRG=writeup1\\
+\begin{enumerate}
+\item cd /scratch/fall2018/group1/Writeup1\\
+\item make TRG=writeup1\\
+\end{enumerate}
 \subsection{qemu Explanation}
 {\bfseries Qemu Flags}\\
-1). {\textbf{-S:}} Do not start the CPU at startup.\\
-2). {\textbf{-nographic:}} Disable graphical output so that QEMU is a command line only application.\\
-3). {\textbf{-kernel:}} Use a bzImage as the kernel, in our case it is using the Intel x86 architecture.\\
-4). {\textbf{-drive file=core-image-lsb-sdk-qemux86.ext4,if=virtio:}} this is used to open an image used file descriptors\\
-5). {\textbf{-enable-kvm:}} Allows full virtualization support.\\
-6). {\textbf{-net none:}} There is no on-board NIC.\\
-7). {\textbf{-usb:}} Enables USB driver.\\
-8). {\textbf{-localtime:}} Legacy option that's currently undocumented. Replaced by -rtc "localtime", which lets the TRC start at the current UTC time.\\
-9). {\textbf{--no-reboot:}} exit instead of rebooting\\
-10). {\textbf{--append "root=/dev/vda rw console=ttyS0 debug":}} Enables debug text to display on the user's terminal\\\\
+\begin{enumerate}
+\item {\textbf{-S:}} Do not start the CPU at startup.\\
+\item {\textbf{-nographic:}} Disable graphical output so that QEMU is a command line only application.\\
+\item {\textbf{-kernel:}} Use a bzImage as the kernel, in our case it is using the Intel x86 architecture.\\
+\item {\textbf{-drive file=core-image-lsb-sdk-qemux86.ext4,if=virtio:}} this is used to open an image used file descriptors\\
+\item {\textbf{-enable-kvm:}} Allows full virtualization support.\\
+\item {\textbf{-net none:}} There is no on-board NIC.\\
+\item {\textbf{-usb:}} Enables USB driver.\\
+\item {\textbf{-localtime:}} Legacy option that's currently undocumented. Replaced by -rtc "localtime", which lets the TRC start at the current UTC time.\\
+\item {\textbf{--no-reboot:}} exit instead of rebooting\\
+\item {\textbf{--append "root=/dev/vda rw console=ttyS0 debug":}} Enables debug text to display on the user's terminal\\\\
+\end{enumerate}
 
 %\fi
 
