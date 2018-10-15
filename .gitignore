@@ -9,3 +9,4 @@ __.tex
 *.log
 *.ps
 *.aux
+/latex-git-log
