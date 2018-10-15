@@ -9,19 +9,39 @@
  * Sources:
  * - checking for availability of rdrand instruction was obtained from rdrand_test.c
  * - genrand_int32 and its content was obtained from mt19937ar.c
- * - rdrand: https://stackoverflow.com/questions/43389380/working-example-intel-rdrand-in-c-language-how-to-generate-a-float-type-number
+ * - rdrand: https://codereview.stackexchange.com/questions/147656/checking-if-cpu-supports-rdrand
  * - http://man7.org/linux/man-pages/man3/ was used to reference other functions
- *
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
 #include <limits.h>
+#include <x86intrin.h>
 
-#define MAX_JOBS 100
+#define MAX_JOBS 32
+
+typedef struct {
+    int m_num;
+    int m_wait;
+} Job;
+
+// Global variables
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+Job jobs[MAX_JOBS];
+unsigned int jhead;
+unsigned int jtail;
+unsigned int jtotal_produced;
+unsigned int jtotal_consumed;
+bool use_rdrand;
+
+
+// -----------------------------------------------------------------------------
+// mt19937ar.c Stuff
+// -----------------------------------------------------------------------------
 
 /* Period parameters */
 #define N 624
@@ -32,35 +52,6 @@
 
 static unsigned long mt[N]; /* the array for the state vector  */
 static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
-
-typedef struct {
-    int m_num;
-    int m_wait;
-} Job;
-
-// Global variables
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-Job* jobs;
-unsigned int jhead;
-unsigned int jtail;
-unsigned int jtotal_produced;
-unsigned int jtotal_consumed;
-int use_rdrand;
-
-// rdrand
-int rdrand(int* out, int min, int max) {
-    int retries = 10;
-    unsigned long long rand64;
-
-    while(retries--) {
-        if ( __builtin_ia32_rdrand64_step(&rand64) ) {
-            *out = (int)((float)rand64 / ULONG_MAX * (max - min)) + min;
-            return 1;
-        }
-    }
-
-    return 0;
-}
 
 /* initializes mt[N] with a seed */
 void init_genrand(unsigned long s)
@@ -116,6 +107,50 @@ unsigned long genrand_int32(void)
     return y;
 }
 
+
+// -----------------------------------------------------------------------------
+// rdrand Stuff
+// -----------------------------------------------------------------------------
+
+bool rdrand_supported() {
+    unsigned int eax, ebx, ecx, edx;
+    eax = 0x01;
+
+    __asm__ __volatile__(
+                         "cpuid;"
+                         : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
+                         : "a"(eax)
+                         );
+
+    return (ecx & 0x40000000);
+}
+
+unsigned int rdrand_uint32() {
+    // https://codereview.stackexchange.com/questions/147656/checking-if-cpu-supports-rdrand
+    unsigned int value;
+    while (_rdrand32_step(&value) == 0);
+    return value;
+}
+
+
+// -----------------------------------------------------------------------------
+// General random generator
+// -----------------------------------------------------------------------------
+
+unsigned int our_rand_uint(unsigned int min, unsigned int max) {
+    if (use_rdrand) {
+        return min + rdrand_uint32() % (1 + max - min);
+    }
+    else {
+        return min + genrand_int32() % (1 + max - min);
+    }
+}
+
+
+// -----------------------------------------------------------------------------
+// Producer / Consumer
+// -----------------------------------------------------------------------------
+
 void* producer(void *tid) {
     while (1) {
         // Acquire mutex
@@ -128,14 +163,8 @@ void* producer(void *tid) {
             continue;
         }
         // Create job
-        if (use_rdrand) {
-            rdrand(&(jobs[jtail].m_num), 0, 1000);
-            rdrand(&(jobs[jtail].m_wait), 3, 7);
-        }
-        else {
-            jobs[jtail].m_num = genrand_int32() % 1000;
-            jobs[jtail].m_wait = 3 + (genrand_int32() % (8 - 3));
-        }
+        jobs[jtail].m_num = our_rand_uint(0, 1000);
+        jobs[jtail].m_wait = our_rand_uint(2, 9);
         // Track total jobs
         ++jtotal_produced;
         // Display
@@ -145,8 +174,8 @@ void* producer(void *tid) {
         jtail = jnext;
         // Release mutex
         pthread_mutex_unlock(&mutex);
-        // Wait some time before generating next job for proof of concurrency
-        usleep(500000);
+        // Wait 3-7 before producing next job
+        sleep(our_rand_uint(3, 7));
     }
 
     return 0;
@@ -156,7 +185,6 @@ void* consumer(void *tid) {
     int dt;
 
     while (1) {
-        dt = 0;
         // Acquire mutex
         pthread_mutex_lock(&mutex);
         // Process job if not empty
@@ -170,50 +198,41 @@ void* consumer(void *tid) {
             // Advance jhead
             ++jhead;
             if (jhead == MAX_JOBS) jhead = 0;
+            // Release mutex
+            pthread_mutex_unlock(&mutex);
+            // Sleep for dt
+            sleep(dt);
         }
-        // Release mutex
-        pthread_mutex_unlock(&mutex);
-        // Sleep for dt
-        if (dt) sleep(dt);
+        else {
+            // Release mutex
+            pthread_mutex_unlock(&mutex);
+        }
     }
     return 0;
 }
 
+
+// -----------------------------------------------------------------------------
+// Main
+// -----------------------------------------------------------------------------
+
 int main(int argc, char* argv[]) {
     // Declare variables
-    unsigned int eax;
-    unsigned int ebx;
-    unsigned int ecx;
-    unsigned int edx;
-    pthread_t th1;
-    pthread_t th2;
+    pthread_t th1, th2;
+
+    // Check if rdrand is supported
+    use_rdrand = rdrand_supported();
+
+    if (use_rdrand)
+        fprintf(stdout, "Using rdrand\n");
+    else
+        fprintf(stdout, "Using mt19937\n");
 
     // Assign global variables
-    jobs = (Job*)malloc(sizeof(Job) * MAX_JOBS);
     jhead = 0;
     jtail = 0;
     jtotal_produced = 0;
     jtotal_consumed = 0;
-
-    // Determine if rdrand is supported
-    eax = 0x01;
-
-    __asm__ __volatile__(
-                         "cpuid;"
-                         : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
-                         : "a"(eax)
-                         );
-
-    if (ecx & 0x40000000) {
-        // use rdrand
-        use_rdrand = 1;
-        fprintf(stdout, "Using rdrand\n");
-    }
-    else {
-        // use mt19937
-        use_rdrand = 0;
-        fprintf(stdout, "Using mt19937\n");
-    }
 
     // Create consumer and producer threads
     pthread_create(&th1, NULL, consumer, NULL);
