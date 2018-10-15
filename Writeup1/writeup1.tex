@@ -50,8 +50,6 @@
 
 \section{WriteUp 1}
 
-%\iffalse
-
 \subsection{Command Log}
 {\bfseries Logging into OS2}\\
 \begin{enumerate}
@@ -114,23 +112,22 @@ This will hang, which it should; to unhang the process, follow the steps below.\
 \item {\textbf{--append "root=/dev/vda rw console=ttyS0 debug":}} Enables debug text to display on the user's terminal\\\\
 \end{enumerate}
 
-%\fi
-
 \subsection{Concurrency}
 \begin{enumerate}
 \item The objective of concurrency is to understand how to synchronize operations between two tasks.
 \item We use pthreads for multi-threading and mutexes for critical sections. One buffer, two threads (plus the main thread), and one mutex are involved in producing and consuming jobs. Details regarding the role of each are described below:
 \begin{description}
-\item[Buffer] The buffer is a circular FIFO queue, containing jobs awaiting to be consumed. The buffer's starting and ending points are marked by \texttt{jhead} and \texttt{jtail} variables. Produced jobs are appended to the circular queue, incrementing and wrapping \texttt{jtail}. Consumed jobs are removed out of the cicrular queue, incrementing and wrapping \texttt{jhead}.
+\item[Buffer] The buffer is a circular FIFO queue, containing jobs awaiting to be consumed. The buffer's starting and ending points are marked by \texttt{jhead} and \texttt{jtail} variables. Produced jobs are appended to the circular queue, incrementing and wrapping \texttt{jtail}. Consumed jobs are removed out of the circular queue, incrementing and wrapping \texttt{jhead}.
 
 The buffer has a limit defined by \texttt{NUM\_JOBS} preprocessor. Once \texttt{jtail} reaches the limit, that is one less than \texttt{jhead}, the producer stops creating jobs until space becomes available again.
 \item[Producer] The producer thread is a continuous while loop, which does the following:
 \begin{enumerate}
 \item Acquire mutex via \texttt{pthread\_mutex\_lock}.
 \item Check if the jobs queue is not full. If the queue is full, simply unlock the mutex and continue the loop.
-\item Create a job with randomized wait time and number values. The randomization is achieved by \texttt{rdrand} if supported by platform or \texttt{mt19937} if not.
+\item Create a job with a random wait time (2 to 9 seconds) and a random number, between 0 and 1000. The randomization is achieved by \texttt{_rdrand32_step} intrinsic if supported or \texttt{mt19937ar.c} if not.
 \item Append job to the queue, incrementing and wrapping \texttt{jtail}.
 \item Release the mutex via \texttt{pthread\_mutex\_unlock}.
+\item Sleep 3 to 7 seconds.
 \end{enumerate}
 \item[Consumer] The consumer thread is also a continuous while loop, which does the following:
 \begin{enumerate}
@@ -138,14 +135,14 @@ The buffer has a limit defined by \texttt{NUM\_JOBS} preprocessor. Once \texttt{
 \item Check if queue is not empty. If empty, release the mutex and continue the loop.
 \item Get job at \texttt{jhead}.
 \item Print out the number value of job.
-\item Copy job wait time to a seperate variable, \texttt{dt}.
+\item Copy job wait time to a separate variable, \texttt{dt}.
 \item Increment and wrap \texttt{jhead}.
 \item Release the mutex.
-\item Sleep for await time indicated at \texttt{dt}.
+\item Sleep for a wait time indicated at \texttt{dt}.
 \end{enumerate}
 \end{description}
-\item In order to validate concurrency, we printed out every time a job was produced and every time a job was about to be consumed. A small delay was added after producing a job, to ensure that a job can be consumed while jobs are being produced. Once the buffer fills up, the producer waits for consumer to consume a job.
-\item Although I, Anton, had previous experience with mutexes and multithreading, I did learn that concurrency can as well be achieved with semaphores.
+\item In order to validate concurrency, we printed out every time a job was produced and every time a job was about to be consumed. A 3-7 delay  added after producing a job, to ensure that a job can be consumed while jobs are being produced. Once the buffer fills up, the producer waits for consumer to consume a job.
+\item Although I, Anton, had previous experience with mutexes and multi-threading, I did learn that concurrency can as well be achieved with semaphores.
 \end{enumerate}
 
 \subsection{Version Control}
