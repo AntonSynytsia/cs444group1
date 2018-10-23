@@ -1,5 +1,5 @@
 /*
- * Concurrency 1
+ * Concurrency 2
  * - Anton Synytsia
  * - David Jansen
  * - Eytan Brodsky
@@ -146,7 +146,7 @@ unsigned int our_rand_uint(unsigned int min, unsigned int max) {
 
 
 // -----------------------------------------------------------------------------
-// Producer / Consumer
+// Philosopher
 // -----------------------------------------------------------------------------
 
 void* philosopher(const char* name) {
