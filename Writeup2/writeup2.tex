@@ -1,5 +1,4 @@
-\documentclass[onecolumn, draftclsnofoot,10pt, compsoc]{IEEEtran}
-%\documentclass[10pt,english,letterpaper]{article}
+\documentclass[onecolumn, draftclsnofoot, 10pt, compsoc]{../ThirdParty/IEEEtran}
 \usepackage{graphicx}
 \usepackage{url}
 \usepackage{setspace}
@@ -11,51 +10,55 @@
 \usepackage{color}
 \usepackage{enumitem}
 \usepackage{textcomp}
+\usepackage{cite}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[hidelinks]{hyperref}
+\usepackage[normalem]{ulem}
 
 \usepackage{geometry}
-\usepackage[normalem]{ulem}
-\useunder{\uline}{\ul}{}
 
-%\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{babel}
-\usepackage{longtable,hyperref}
-
-% set margins to 0.75in
-%letter is 11 x 8.5 w/out margins
 \geometry{textheight=9.5in, textwidth=7in}
-
-\newcommand{\longtableendfoot}{Please continue at the next page}
-
-\newcommand{\cred}[1]{{\color{red}#1}}
-\newcommand{\cblue}[1]{{\color{blue}#1}}
-
-\newcommand{\toc}{\tableofcontents}
-
-\def\name{CS444 Group1}
-
-
-%pull in the necessary preamble matter for pygments output
-\input{pygments.tex}
-
-%% The following metadata will show up in the PDF properties
-% \hypersetup{
-%   colorlinks = false,
-%   urlcolor = black,
-%   pdfauthor = {\name},
-%   pdfkeywords = {cs311 ``operating systems'' files filesystem I/O},
-%   pdftitle = {CS 311 Project 1: UNIX File I/O},
-%   pdfsubject = {CS 311 Project 1},
-%   pdfpagemode = UseNone
-% }
 
 \parindent = 0.0 in
 \parskip = 0.1 in
 
+%pull in the necessary preamble matter for pygments output
+\input{../ThirdParty/pygments.tex}
+
 \begin{document}
+\begin{titlepage}
+\pagenumbering{gobble}
+\begin{singlespace}
+\centering
+\scshape{
+    \huge{Writeup 2}\par
+    \vspace{.5in}
+    \large{CS 444}\par
+    \large{October 28, 2018}\par
+    \vspace{.5in}
+    \large{Anton Synytsia, Eytan Brodsky, David Jansen}\par
+    \vspace{.5in}
+    \vfill
+}
+%\begin{abstract}
+%\end{abstract}
+\end{singlespace}
+\end{titlepage}
+\newpage
+\pagenumbering{arabic}
+\tableofcontents
+\clearpage
 
-%\tableofcontents
+\section{Section 1}
+\section{Section 2}
 
-\section{WriteUp 2}
+
+\clearpage
+\medskip
+\bibliographystyle{../ThirdParty/IEEEtran}
+\bibliography{ref}
 
 \end{document}

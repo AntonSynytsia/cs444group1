@@ -8,4 +8,3 @@ __.tex
 *.log
 *.ps
 *.aux
-!linux-yocto-3.19/*

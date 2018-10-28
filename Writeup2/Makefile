@@ -3,7 +3,7 @@
 LATEX	= latex -shell-escape
 BIBTEX	= bibtex
 DVIPS	= dvips
-DVIPDF  = dvipdft
+DVIPDF	= dvipdft
 XDVI	= xdvi -gamma 4
 GH		= gv
 
@@ -23,7 +23,7 @@ $(TRG): %.dvi: %.tex $(EXAMPLES)
 	#requires that you \include{pygments.tex} in your preamble
 
 	$(LATEX) $<
-	#$(BIBTEX) $(<:%.tex=%)
+	$(BIBTEX) $(<:%.tex=%)
 	$(LATEX) $<
 	$(LATEX) $<
 	#remove the pygmentized output to avoid cluttering up the directory
