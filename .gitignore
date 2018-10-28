@@ -9,7 +9,8 @@ __.tex
 *.ps
 *.aux
 /linux-yocto-3.19/
-!/linux-yocto-3.19/block/clook-ioched.c
+!/linux-yocto-3.19/block/clook-iosched.c
+!/linux-yocto-3.19/block/Makefile
 /Writeup2/big_file
 /Writeup2/strace_results
 
