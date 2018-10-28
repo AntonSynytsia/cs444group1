@@ -8,10 +8,10 @@ XDVI	= xdvi -gamma 4
 GH		= gv
 
 EXAMPLES = $(wildcard *.c)
-SRC	:= $(shell egrep -l '^[^%]*\\begin\{document\}' *.tex)
-TRG	= $(SRC:%.tex=%.dvi)
-PSF	= $(SRC:%.tex=%.ps)
-PDF	= $(SRC:%.tex=%.pdf)
+SRC := $(shell egrep -l '^[^%]*\\begin\{document\}' *.tex)
+TRG = $(SRC:%.tex=%.dvi)
+PSF = $(SRC:%.tex=%.ps)
+PDF = $(SRC:%.tex=%.pdf)
 
 pdf: $(PDF)
 
@@ -45,7 +45,6 @@ showps: $(PSF)
 all: pdf
 
 clean:
-	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg
+	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.toc
 
 .PHONY: all show clean ps pdf showps
-
