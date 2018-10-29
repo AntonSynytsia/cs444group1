@@ -4,17 +4,17 @@ Anton Synytsia<br/>
 Eytan Brodsky<br/>
 David Jansen<br/>
 
-## Using VM
+## Using Qemu Virtual Machine
 ### Starting
 ```bash
 cd /scratch/fall2018/group1/
 ./qemu-run.sh
 ```
-### Logging in
+### Logging In
 ```bash
 root
 ```
-### Exiting out
+### Exiting Out
 ```bash
 reboot
 ```
@@ -59,7 +59,7 @@ make clean
 
 ## Useful Commands
 ### Latex Version
-To use latest version of latex, prepend to your path:
+To use latest version of latex, execute the following command:
 ```bash
 PATH=/usr/local/apps/tex_live/current/bin/x86_64-linux:$PATH
 ```
@@ -70,16 +70,16 @@ Navigate to git repository, for example:
 cd /scratch/fall2018/group1/
 ```
 
-Execute command:
+And execute the following command:
 ```bash
 tar -cvjSf cs444group1.tar.bz2 *
 ```
 
 ### Generating Table
-Navigate to git repository and execute the following command:
+Navigate to git repository and execute the following command(s):
 ```bash
 chmod +x ./ThirdParty/latex-git-log
 ./ThirdParty/latex-git-log --width=8.5 --lang=en > log.tex
 
 ```
-Then copy the content within log.tex into your writeup
+Then, copy the content within log.tex into the writeup.
