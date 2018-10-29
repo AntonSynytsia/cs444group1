@@ -11,6 +11,7 @@
 \usepackage{enumitem}
 \usepackage{textcomp}
 \usepackage{cite}
+\usepackage{listings}
 
 \usepackage{lmodern}
 \usepackage[hidelinks]{hyperref}
@@ -124,6 +125,26 @@ To run, execute the following commands:
 \inputminted[breaklines]{bash}{cs7.sh}
 
 \section{Testing}
+\begin{enumerate}
+\item Create test script.
+\lstset{language=Python}
+\begin{lstlisting}
+import os
+import mmap
+import struct
+import random
+
+mem = os.open("./big_file", os.O_RDWR)
+addr = mmap.mmap(mem, 0x40000000, offset=random.randint(1, 256)*mmap.ALLOCATIONGRANULARITY)
+
+base = 100
+i = struct.unpack('I', addr[base:base+4])[0]
+print(i)
+
+\end{lstlisting}
+\item cat /dev/urandom \textgreater big\_file (create a large file)
+\item Run the python script on the file. If there are no errors, then the schedule is working.
+\end{enumerate}
 
 \section{Concurrency 2}
 \begin{enumerate}
