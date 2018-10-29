@@ -131,7 +131,7 @@ To run, execute the following commands:
     The purpose of this concurrency assignment was to get us to start working with parallel programming. Not only did this assignment get us to work more with threads that each share a resource in the form of a mutex, it also forced us to think about how programs work in parallel to one another.
     \item Our Approach to the problem:
     Our initial approach to the assignment was to think through how we wanted to implement the shared resource, we eventually ended up choosing a mutex. Next we decided to use rdrand again in order to generate random numbers for both the thinking and eating periods. If rdrand wasn't supported we made sure to use mt19937. In order to get each philosopher to eat we ran a while loop where each philosopher could be doing one of three things, eating, thinking, or waiting to get access to two forks. Our code for this process is shown below. This code is ran after a philosopher has completed their initial thinking period.
-    \begin{verbatim}
+    \begin{minted}{C}
     void* philosopher(const char* name) {
         while (1) {
             // Acquire mutex
@@ -155,7 +155,7 @@ To run, execute the following commands:
     
         return 0;
     }
-    \end{verbatim}
+    \end{minted}
      This process begins with a philosopher grabbing and locking the mutex. The philosopher with the mutex will then check to see if two forks are available. If there are not two forks the philosopher will unlock the mutex and restart the process. If there ends up being 2 or more forks available the philosopher will grab the forks and unlock the mutex. This philosopher will now be assigned a random number between 2 and 9 seconds so they can eat. Once they are done eating they will grab and lock the mutex once again and return the two forks. When the forks are returned they will unlock the mutex and sleep (thinking period) again for a randomly assigned time of 1-20 seconds before repeating the process all over again. 
         
     \item How we ensured the solution was correct: We ensured our solution was correct by printing statements to the command line. Every time a philosopher grabbed and returned the forks we were able to see it outputted to the command line. By doing this we were able to see that each philosopher was able to grab the forks, eat, and return the forks. After running the process multiple times we were able to ensure that our program was running correctly and each philosopher was able to eat. 
