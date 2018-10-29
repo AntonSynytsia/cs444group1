@@ -127,8 +127,7 @@ To run, execute the following commands:
 \section{Testing}
 \begin{enumerate}
 \item Create test script.
-\lstset{language=Python}
-\begin{lstlisting}
+\begin{minted}{Python}
 import os
 import mmap
 import struct
@@ -141,7 +140,7 @@ base = 100
 i = struct.unpack('I', addr[base:base+4])[0]
 print(i)
 
-\end{lstlisting}
+\end{minted}
 \item cat /dev/urandom \textgreater big\_file (create a large file)
 \item Run the python script on the file. If there are no errors, then the schedule is working.
 \end{enumerate}
@@ -173,13 +172,13 @@ print(i)
             pthread_mutex_unlock(&mutex);
             sleep(our_rand_uint(1, 20));
         }
-    
+
         return 0;
     }
     \end{minted}
-     This process begins with a philosopher grabbing and locking the mutex. The philosopher with the mutex will then check to see if two forks are available. If there are not two forks the philosopher will unlock the mutex and restart the process. If there ends up being 2 or more forks available the philosopher will grab the forks and unlock the mutex. This philosopher will now be assigned a random number between 2 and 9 seconds so they can eat. Once they are done eating they will grab and lock the mutex once again and return the two forks. When the forks are returned they will unlock the mutex and sleep (thinking period) again for a randomly assigned time of 1-20 seconds before repeating the process all over again. 
-        
-    \item How we ensured the solution was correct: We ensured our solution was correct by printing statements to the command line. Every time a philosopher grabbed and returned the forks we were able to see it outputted to the command line. By doing this we were able to see that each philosopher was able to grab the forks, eat, and return the forks. After running the process multiple times we were able to ensure that our program was running correctly and each philosopher was able to eat. 
+     This process begins with a philosopher grabbing and locking the mutex. The philosopher with the mutex will then check to see if two forks are available. If there are not two forks the philosopher will unlock the mutex and restart the process. If there ends up being 2 or more forks available the philosopher will grab the forks and unlock the mutex. This philosopher will now be assigned a random number between 2 and 9 seconds so they can eat. Once they are done eating they will grab and lock the mutex once again and return the two forks. When the forks are returned they will unlock the mutex and sleep (thinking period) again for a randomly assigned time of 1-20 seconds before repeating the process all over again.
+
+    \item How we ensured the solution was correct: We ensured our solution was correct by printing statements to the command line. Every time a philosopher grabbed and returned the forks we were able to see it outputted to the command line. By doing this we were able to see that each philosopher was able to grab the forks, eat, and return the forks. After running the process multiple times we were able to ensure that our program was running correctly and each philosopher was able to eat.
     \item What we learned: From this assignment we learned how to get multiple threads to work in parallel with one another in order to access a shared resource. We also improved our ability to think in parallel by discussing as a group how to approach the problem and working together on the solution.
 \end{enumerate}
 
