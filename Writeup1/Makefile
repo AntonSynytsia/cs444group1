@@ -1,5 +1,5 @@
-#LATEX	= /usr/local/apps/tex_live/current/bin/x86_64-linux/latex -shell-escape
-#LATEX	= /usr/bin/latex -shell-escape
+export PATH := /usr/local/apps/tex_live/current/bin/x86_64-linux/:$(PATH)
+
 LATEX	= latex -shell-escape
 BIBTEX	= bibtex
 DVIPS	= dvips
@@ -8,10 +8,10 @@ XDVI	= xdvi -gamma 4
 GH		= gv
 
 EXAMPLES = $(wildcard *.c)
-SRC	:= $(shell egrep -l '^[^%]*\\begin\{document\}' *.tex)
-TRG	= $(SRC:%.tex=%.dvi)
-PSF	= $(SRC:%.tex=%.ps)
-PDF	= $(SRC:%.tex=%.pdf)
+SRC := $(shell egrep -l '^[^%]*\\begin\{document\}' *.tex)
+TRG = $(SRC:%.tex=%.dvi)
+PSF = $(SRC:%.tex=%.ps)
+PDF = $(SRC:%.tex=%.pdf)
 
 pdf: $(PDF)
 
@@ -24,8 +24,8 @@ $(TRG): %.dvi: %.tex $(EXAMPLES)
 
 	$(LATEX) $<
 	#$(BIBTEX) $(<:%.tex=%)
-	$(LATEX) $<
-	$(LATEX) $<
+	#$(LATEX) $<
+	#$(LATEX) $<
 	#remove the pygmentized output to avoid cluttering up the directory
 	#rm __${EXAMPLES}.tex
 
@@ -46,6 +46,6 @@ all: pdf
 
 clean:
 	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.toc
+	rm -rf _minted*
 
 .PHONY: all show clean ps pdf showps
-
