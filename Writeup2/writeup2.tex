@@ -1,4 +1,4 @@
-\documentclass[onecolumn, draftclsnofoot, 10pt, compsoc]{../ThirdParty/IEEEtran}
+\documentclass[onecolumn, draftclsnofoot, 10pt, compsoc]{IEEEtran}
 \usepackage{graphicx}
 \usepackage{url}
 \usepackage{setspace}
@@ -12,8 +12,7 @@
 \usepackage{textcomp}
 \usepackage{cite}
 
-\usepackage[T1]{fontenc}
-%\usepackage[utf8]{inputenc}
+%\usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage[hidelinks]{hyperref}
 \usepackage[normalem]{ulem}
@@ -22,13 +21,22 @@
 
 \geometry{textheight=9.5in, textwidth=7in}
 
-\userpackage{minted}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{lineno}
+\usepackage{upquote}
+\usepackage{fvextra}
+\usepackage{fancyvrb}
+\usepackage{minted}
+\usepackage{longtable,hyperref}
 
 \parindent = 0.0 in
 \parskip = 0.1 in
 
 %pull in the necessary preamble matter for pygments output
-\input{../ThirdParty/pygments.tex}
+%\input{../ThirdParty/pygments.tex}
+
+\newcommand{\longtableendfoot}{Please continue at the next page}
 
 \begin{document}
 \begin{titlepage}
@@ -58,7 +66,7 @@
 C-Look elevator reads/writes from the lowest request address to the highest request address without moving back or forth, at any time in between, except for after dispatching the highest requested address, where the elevator resets to the next, lowest, requested address \cite{clook}. This allows for the disk head to read/write efficiently, in an expected direction; otherwise, changing directions too much will have performance implications and can physically deteriorate the hard-drive.
 
 In order to implement C-Look, we had to start with an existing scheduler as a template template:
-\begin{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{bash}
+\begin{minted}[breaklines]{bash}
 cd /scratch/fall2018/group1/linux-yocto-3.19/block/
 cp noop-iosched.c clook-iosched.c
 \end{minted}
@@ -69,27 +77,27 @@ We then renamed all functions and identifiers C-Look, and modified two functions
 \item[Request Adder]
 Instead of appending to the end, like NO-OP did, we insert at a sorted location within the doubly-linked list of requests. Added requests are stored and sorted to the right of head:
 
-\texttt{HEAD} \xrightarrow{} $1$ \xrightarrow{} $2$ \xrightarrow{} $7$ \xrightarrow{} $33$ \xrightarrow{} $34$ \xrightarrow{} \ldots
+$ \texttt{HEAD} \rightarrow 1 \rightarrow 2 \rightarrow 7 \rightarrow 33 \rightarrow 34 \rightarrow \ldots $
 
 Our sort criteria is \href{https://elixir.bootlin.com/linux/v3.19/source/include/linux/blkdev.h#L873}{blk\_rq\_pos}.
 
 In order to insert at the right location, we do the following:
 \begin{enumerate}
-\item Start at \textttt{HEAD} and traverse forward until:
+\item Start at \texttt{HEAD} and traverse forward until:
 \begin{itemize}
-\item Next points to \textttt{HEAD}, meaning at last request node.
+\item Next points to \texttt{HEAD}, meaning at last request node.
 \item Next points to a request node, whose block position is greater than the block position of the request node being added.
 \end{itemize}
 \item Append request node to currently, iterated node, via \href{https://elixir.bootlin.com/linux/v3.19/source/include/linux/list.h#L61}{list\_add}.
 \end{enumerate}
 
-\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{c}{code_sample1.txt}
+\inputminted[breaklines]{c}{cs1.c}
 
 \item[Request Dispatcher]
 Our modified version of the dispatcher prints out a note in case the request access order is inconsistent, that is if next request is less than previous:
-\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{c}{code_sample2.txt}
+\inputminted[breaklines]{c}{cs2.txt}
 This consistency verification also required a global variable, which we defined at the top:
-\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{c}{code_sample3.txt}
+\inputminted[breaklines]{c}{cs3.c}
 
 \end{description}
 
@@ -100,22 +108,22 @@ In order to compile Qemu with our scheduler, we had to edit two files within \te
 \begin{description}
 \item[Makefile]
 Within the Makefile, we had to add another configuration:
-\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{bash}{code_sample4.txt}
+\inputminted[breaklines]{bash}{cs4.sh}
 \item[Kconfig.iosched]
 Within this file, we had to add the following:
-\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{bash}{code_sample5.txt}
+\inputminted[breaklines]{bash}{cs5.sh}
 \end{description}
 
 \subsection{Compiling}
 To recompile the scheduler, we ran the following commands:
-\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{bash}{code_sample6.txt}
+\inputminted[breaklines]{bash}{cs6.sh}
 
-\Section{Starting Qemu}
+\section{Starting Qemu}
 In order to ease the process of running qemu, as well as, not having to run it in debug environment, we created a \texttt{qemu-run.sh} with custom commands:
-\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{bash}{../qemu-run.sh}
+\inputminted[breaklines]{bash}{../qemu-run.sh}
 
 To run, execute the following commands:
-\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{bash}{code_sample7.txt}
+\inputminted[breaklines]{bash}{cs7.sh}
 
 \section{Testing}
 
@@ -205,7 +213,7 @@ To run, execute the following commands:
 
 \clearpage
 \medskip
-\bibliographystyle{../ThirdParty/IEEEtran}
+\bibliographystyle{IEEEtran}
 \bibliography{ref}
 
 \end{document}

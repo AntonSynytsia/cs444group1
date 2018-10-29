@@ -1,5 +1,5 @@
-#LATEX	= /usr/local/apps/tex_live/current/bin/x86_64-linux/latex -shell-escape
-#LATEX	= /usr/bin/latex -shell-escape
+export PATH := /usr/local/apps/tex_live/current/bin/x86_64-linux/:$(PATH)
+
 LATEX	= latex -shell-escape
 BIBTEX	= bibtex
 DVIPS	= dvips
@@ -46,5 +46,6 @@ all: pdf
 
 clean:
 	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.toc
+	rm -rf _minted*
 
 .PHONY: all show clean ps pdf showps
