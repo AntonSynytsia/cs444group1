@@ -4,6 +4,21 @@ Anton Synytsia<br/>
 Eytan Brodsky<br/>
 David Jansen<br/>
 
+## Using VM
+### Starting
+```bash
+cd /scratch/fall2018/group1/
+./qemu-run.sh
+```
+### Logging in
+```bash
+root
+```
+### Exiting out
+```bash
+reboot
+```
+
 ## Assignment 2
 ### Compiling Concurrency
 ```bash
@@ -51,18 +66,19 @@ PATH=/usr/local/apps/tex_live/current/bin/x86_64-linux:$PATH
 
 ### Compressing
 Navigate to git repository, for example:
-```
+```bash
 cd /scratch/fall2018/group1/
 ```
 
 Execute command:
-```
+```bash
 tar -cvjSf cs444group1.tar.bz2 *
 ```
 
 ### Generating Table
 Navigate to git repository and execute the following command:
-```
+```bash
+chmod +x ./ThirdParty/latex-git-log
 ./ThirdParty/latex-git-log --width=8.5 --lang=en > log.tex
 
 ```

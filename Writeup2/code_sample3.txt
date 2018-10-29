@@ -1,0 +1,1 @@
+sector_t g_last_seg = 0;

@@ -22,6 +22,8 @@
 
 \geometry{textheight=9.5in, textwidth=7in}
 
+\userpackage{minted}
+
 \parindent = 0.0 in
 \parskip = 0.1 in
 
@@ -52,9 +54,75 @@
 \tableofcontents
 \clearpage
 
-\section{Section 1}
-\section{Section 2}
-I like pizza \cite[p.345]{freebsd}
+\section{C-Look Elevator Scheduler}
+C-Look elevator reads/writes from the lowest request address to the highest request address without moving back or forth, at any time in between, except for after dispatching the highest requested address, where the elevator resets to the next, lowest, requested address \cite{clook}. This allows for the disk head to read/write efficiently, in an expected direction; otherwise, changing directions too much will have performance implications and can physically deteriorate the hard-drive.
+
+In order to implement C-Look, we had to start with an existing scheduler as a template template:
+\begin{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{bash}
+cd /scratch/fall2018/group1/linux-yocto-3.19/block/
+cp noop-iosched.c clook-iosched.c
+\end{minted}
+
+We then renamed all functions and identifiers C-Look, and modified two functions:
+\begin{description}
+
+\item[Request Adder]
+Instead of appending to the end, like NO-OP did, we insert at a sorted location within the doubly-linked list of requests. Added requests are stored and sorted to the right of head:
+
+\texttt{HEAD} \xrightarrow{} $1$ \xrightarrow{} $2$ \xrightarrow{} $7$ \xrightarrow{} $33$ \xrightarrow{} $34$ \xrightarrow{} \ldots
+
+Our sort criteria is \href{https://elixir.bootlin.com/linux/v3.19/source/include/linux/blkdev.h#L873}{blk\_rq\_pos}.
+
+In order to insert at the right location, we do the following:
+\begin{enumerate}
+\item Start at \textttt{HEAD} and traverse forward until:
+\begin{itemize}
+\item Next points to \textttt{HEAD}, meaning at last request node.
+\item Next points to a request node, whose block position is greater than the block position of the request node being added.
+\end{itemize}
+\item Append request node to currently, iterated node, via \href{https://elixir.bootlin.com/linux/v3.19/source/include/linux/list.h#L61}{list\_add}.
+\end{enumerate}
+
+\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{c}{code_sample1.txt}
+
+\item[Request Dispatcher]
+Our modified version of the dispatcher prints out a note in case the request access order is inconsistent, that is if next request is less than previous:
+\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{c}{code_sample2.txt}
+This consistency verification also required a global variable, which we defined at the top:
+\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{c}{code_sample3.txt}
+
+\end{description}
+
+The following is a section of code for
+\section{Compiling Qemu with C-Look}
+\subsection{Setup}
+In order to compile Qemu with our scheduler, we had to edit two files within \texttt{/scratch/fall2018/group1/linux-yocto-3.19/block/}:
+\begin{description}
+\item[Makefile]
+Within the Makefile, we had to add another configuration:
+\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{bash}{code_sample4.txt}
+\item[Kconfig.iosched]
+Within this file, we had to add the following:
+\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{bash}{code_sample5.txt}
+\end{description}
+
+\subsection{Compiling}
+To recompile the scheduler, we ran the following commands:
+\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{bash}{code_sample6.txt}
+
+\Section{Starting Qemu}
+In order to ease the process of running qemu, as well as, not having to run it in debug environment, we created a \texttt{qemu-run.sh} with custom commands:
+\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{bash}{../qemu-run.sh}
+
+To run, execute the following commands:
+\inputminted{minted}[mathescape, linenos, numbersep=5pt, gobble=2, frame=lines, framesep=2mm]{bash}{code_sample7.txt}
+
+\section{Testing}
+
+\section{Concurrency 2}
+
+\section{Version Control Log}
+
 
 \clearpage
 \medskip
