@@ -14,4 +14,4 @@ __.tex
 !/linux-yocto-3.19/block/Kconfig.iosched
 /Writeup2/big_file
 /Writeup2/strace_results
-
+/linux
