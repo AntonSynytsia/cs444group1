@@ -19,6 +19,16 @@ root
 reboot
 ```
 
+## Assignment 3
+### Compiling Writeup
+```bash
+cd Writeup3/
+make
+
+# optional cleanup
+make clean
+```
+
 ## Assignment 2
 ### Compiling Concurrency
 ```bash

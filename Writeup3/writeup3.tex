@@ -1,0 +1,73 @@
+\documentclass[onecolumn, draftclsnofoot, 10pt, compsoc]{IEEEtran}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{setspace}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{alltt}
+\usepackage{color}
+\usepackage{enumitem}
+\usepackage{textcomp}
+\usepackage{cite}
+\usepackage{listings}
+
+\usepackage{lmodern}
+\usepackage[hidelinks]{hyperref}
+\usepackage[normalem]{ulem}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{lineno}
+\usepackage{upquote}
+\usepackage{fvextra}
+\usepackage{fancyvrb}
+\usepackage{minted}
+\usepackage{longtable,hyperref}
+
+\usepackage{geometry}
+\geometry{textheight=9.5in, textwidth=7in}
+
+\parindent = 0.0 in
+\parskip = 0.1 in
+
+%pull in the necessary preamble matter for pygments output
+%\input{../ThirdParty/pygments.tex}
+
+\newcommand{\longtableendfoot}{Please continue at the next page}
+
+\begin{document}
+\begin{titlepage}
+\pagenumbering{gobble}
+\begin{singlespace}
+\centering
+\scshape{
+    \huge{Writeup 3}\par
+    \vspace{.5in}
+    \large{CS 444}\par
+    \large{October 30, 2018}\par
+    \vspace{.5in}
+    \large{Anton Synytsia, Eytan Brodsky, David Jansen}\par
+    \vspace{.5in}
+    \vfill
+}
+%\begin{abstract}
+%\end{abstract}
+\end{singlespace}
+\end{titlepage}
+\newpage
+\pagenumbering{arabic}
+\tableofcontents
+\clearpage
+
+\section{Part 1}
+\subsection{Downloading Raspberry-PI Linux Kernel}
+\inputminted[breaklines]{bash}{cs1.sh}
+
+\clearpage
+\medskip
+\bibliographystyle{IEEEtran}
+%\bibliography{ref}
+
+\end{document}
