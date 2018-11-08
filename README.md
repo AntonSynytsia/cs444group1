@@ -84,6 +84,10 @@ And execute the following command:
 ```bash
 tar -cvjSf cs444group1.tar.bz2 *
 ```
+### Extracting
+```bash
+tar xvjf cs444group1.tar.bz2
+```
 
 ### Generating Table
 Navigate to git repository and execute the following command(s):
