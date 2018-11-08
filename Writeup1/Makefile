@@ -35,6 +35,7 @@ $(PSF):%.ps: %.dvi
 
 $(PDF): %.pdf: %.ps
 	ps2pdf $<
+	cp  $(PDF) ../Result/
 
 show: $(TRG)
 	@for i in $(TRG) ; do $(XDVI) $$i & done
