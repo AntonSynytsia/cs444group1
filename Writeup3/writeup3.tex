@@ -1,4 +1,5 @@
-\documentclass[onecolumn, draftclsnofoot, 10pt, compsoc]{IEEEtran}
+\documentclass[onecolumn, draftclsnofoot, 10pt]{IEEEtran}
+
 \usepackage{graphicx}
 \usepackage{url}
 \usepackage{setspace}
@@ -29,8 +30,8 @@
 \usepackage{geometry}
 \geometry{textheight=9.5in, textwidth=7in}
 
-\parindent = 0.0 in
-\parskip = 0.1 in
+%\parindent = 0.0 in
+%\parskip = 0.1 in
 
 %pull in the necessary preamble matter for pygments output
 %\input{../ThirdParty/pygments.tex}
@@ -46,7 +47,7 @@
     \huge{Writeup 3}\par
     \vspace{.5in}
     \large{CS 444}\par
-    \large{October 30, 2018}\par
+    \large{November 7, 2018}\par
     \vspace{.5in}
     \large{Anton Synytsia, Eytan Brodsky, David Jansen}\par
     \vspace{.5in}
@@ -61,13 +62,64 @@
 \tableofcontents
 \clearpage
 
-\section{Part 1}
-\subsection{Downloading Raspberry-PI Linux Kernel}
+\section{Setup}
+
+\subsection{Downloading Raspberry Pi Linux Kernel}
+The following steps were performed to setup Raspberry Pi Linux kernel, on \texttt{OS2}:
 \inputminted[breaklines]{bash}{cs1.sh}
+
+
+\subsection{Preparing SD Card}
+We chose Raspbian Stretch Lite image for our Raspberry Pi kernel. The following was done to setup Raspbian on SD card:
+\begin{enumerate}
+\item Download and extract \texttt{2018-10-09-raspbian-stretch-lite.zip} from \url{https://www.raspberrypi.org/downloads/raspbian/}.
+\item Download and install Etcher from \url{https://www.balena.io/etcher/}.
+\item Insert SD card into laptop.
+\item Start Etcher and do the following:
+    \begin{enumerate}
+    \item Set image to \texttt{2018-10-09-raspbian-stretch-lite.img}
+    \item Set drive to the SD Card
+    \item Click \doublequote Flash!\doublequote
+    \end{enumerate}
+\item Once the setup is complete, navigate to the SD Card drive and use text editor to append the following to \texttt{config.txt}:
+\inputminted[breaklines]{bash}{cs2.sh}
+\end{enumerate}
+
+
+\subsection{Testing Raspbian}
+The following steps, heavily based on adafruit guide, were taken to initiate a Raspbian serial console session:
+\begin{description}
+\item Install Prolific Chipset and driver \cite{adafruit1}.
+\item Connect black, white, and green wires to the outer pins $3$, $4$, and $5$ respectively \cite{adafruit1}.
+\item Leave red wire unpinned, as the a separate power adapter is used \cite{adafruit1}. It is important that only one power source is used as the board can get damaged \cite{adafruit1}.
+\item Insert the Micro SD Card into Raspberry Pi.
+\item Insert TTL Serial Cable USB into Laptop.
+\item Insert the power adapter into Raspberry Pi.
+\item Start Putty and do the following:
+\begin{description}
+\item Set \textit{Connection type} to serial mode.
+\item Set \textit{Serial line} to \texttt{COM6}; {COM6} here refers to our, particular cable, which on Windows version we determined by accessing \textit{Device Manager} \cite{adafruit1}.
+\item Set \textit{Speed} to $115200$ \cite{adafruit1}.
+\item Click \textit{Open}.
+\end{description}
+\item Within the serial console, press the \textit{RETURN} key to activate communications \cite{adafruit1}.
+\end{description}
+
+
+\subsection{Verifying Build Environment}
+
+
+
+\section{Morse Code LED Blinking}
+
+
+
+\section{Concurrency}
+
 
 \clearpage
 \medskip
 \bibliographystyle{IEEEtran}
-%\bibliography{ref}
+\bibliography{ref}
 
 \end{document}
