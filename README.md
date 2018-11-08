@@ -75,18 +75,13 @@ PATH=/usr/local/apps/tex_live/current/bin/x86_64-linux:$PATH
 ```
 
 ### Compressing
-Navigate to git repository, for example:
+Navigate to folder that contains the git repository folder and execute the following command:
 ```bash
-cd /scratch/fall2018/group1/
-```
-
-And execute the following command:
-```bash
-tar -cvjSf cs444group1.tar.bz2 *
+tar cvjf CS444_project#_1.tar.bz2 rep_folder_name
 ```
 ### Extracting
 ```bash
-tar xvjf cs444group1.tar.bz2
+tar xvjf CS444_project#_1.tar.bz2
 ```
 
 ### Generating Table
