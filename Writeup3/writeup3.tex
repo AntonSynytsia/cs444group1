@@ -1,4 +1,4 @@
-\documentclass[onecolumn, draftclsnofoot, 10pt]{IEEEtran}
+\documentclass[onecolumn, draftclsnofoot, 10pt, compsoc]{IEEEtran}
 
 \usepackage{graphicx}
 \usepackage{url}
@@ -30,8 +30,8 @@
 \usepackage{geometry}
 \geometry{textheight=9.5in, textwidth=7in}
 
-%\parindent = 0.0 in
-%\parskip = 0.1 in
+\parindent = 0.0 in
+\parskip = 0.1 in
 
 %pull in the necessary preamble matter for pygments output
 %\input{../ThirdParty/pygments.tex}
@@ -53,8 +53,9 @@
     \vspace{.5in}
     \vfill
 }
-%\begin{abstract}
-%\end{abstract}
+\begin{abstract}
+This document describes how to do Morse Code blinking on Rasberry Pi.
+\end{abstract}
 \end{singlespace}
 \end{titlepage}
 \newpage
@@ -62,23 +63,31 @@
 \tableofcontents
 \clearpage
 
-\section{Setup}
+\section{Required Technologies}
+In order to perform this lab, the following technology is required:
+\begin{enumerate}
+\item Raspberry Pi, preferably model 3B+
+\item Micro SD card and Card Reader, with at least 4 GB space.
+\item 3.3V TTL UART to USB converter for establishing serial console.
+\item Power supply cable for Raspberry Pi.
+\item Access to OS2 server.
+\end{enumerate}
 
-\subsection{Downloading Raspberry Pi Linux Kernel}
-The following steps were performed to setup Raspberry Pi Linux kernel, on \texttt{OS2}:
-\inputminted[breaklines]{bash}{cs1.sh}
+
+\section{Setup}
+In the following sections, we describe the steps performed for setting up Raspbian Stretch Lite on Raspberry Pi. The first section describes how to upload Raspbian to SD Card, the second section focuses on testing Raspbian with TTL Serial Cable, and the third section describes how to build Linux kernel on \texttt{OS2} and upload it to SD card.
 
 
 \subsection{Preparing SD Card}
-We chose Raspbian Stretch Lite image for our Raspberry Pi kernel. The following was done to setup Raspbian on SD card:
+We begin the lab with setting up Raspbian on Raspberry Pi. We chose to use Raspian Stretch Lite image for our Raspberry Pi kernel. Refer to the steps below for setting up Raspbian on SD card:
 \begin{enumerate}
 \item Download and extract \texttt{2018-10-09-raspbian-stretch-lite.zip} from \url{https://www.raspberrypi.org/downloads/raspbian/}.
 \item Download and install Etcher from \url{https://www.balena.io/etcher/}.
-\item Insert SD card into laptop.
+\item Mount Micro SD card into Card Reader and mount the card reader into laptop.
 \item Start Etcher and do the following:
     \begin{enumerate}
-    \item Set image to \texttt{2018-10-09-raspbian-stretch-lite.img}
-    \item Set drive to the SD Card
+    \item Set image to \texttt{2018-10-09-raspbian-stretch-lite.img} (or alike).
+    \item Set drive to SD Card
     \item Click ``Flash!``
     \end{enumerate}
 \item Once the setup is complete, navigate to the SD Card drive and use text editor to append the following to \texttt{config.txt}:
@@ -89,24 +98,42 @@ We chose Raspbian Stretch Lite image for our Raspberry Pi kernel. The following 
 \subsection{Testing Raspbian}
 The following steps, heavily based on adafruit guide, were taken to initiate a Raspbian serial console session:
 \begin{description}
-\item Install Prolific Chipset and driver \cite{adafruit1}.
+\item Install Prolific Chipset driver \cite{adafruit1}.
 \item Connect black, white, and green wires to the outer pins $3$, $4$, and $5$ respectively \cite{adafruit1}.
-\item Leave red wire unpinned, as the a separate power adapter is used \cite{adafruit1}. It is important that only one power source is used as the board can get damaged \cite{adafruit1}.
+\item Leave red wire unpinned, as the a separate power adapter is used instead \cite{adafruit1}. It is important that only one power source is used as the board can get damaged \cite{adafruit1}.
 \item Insert the Micro SD Card into Raspberry Pi.
 \item Insert TTL Serial Cable USB into Laptop.
-\item Insert the power adapter into Raspberry Pi.
+\item Connect the power adapter with Raspberry Pi.
 \item Start Putty and do the following:
 \begin{description}
 \item Set \textit{Connection type} to serial mode.
-\item Set \textit{Serial line} to \texttt{COM6}; {COM6} here refers to our, particular cable, which on Windows version we determined by accessing \textit{Device Manager} \cite{adafruit1}.
+\item Set \textit{Serial line} to \texttt{COM6}; {COM6} here refers to our, particular cable, which on Windows version we determined the port by accessing \textit{Device Manager} \cite{adafruit1}.
 \item Set \textit{Speed} to $115200$ \cite{adafruit1}.
 \item Click \textit{Open}.
 \end{description}
-\item Within the serial console, press the \textit{RETURN} key to activate communications \cite{adafruit1}.
+\item Within the serial console, press \textit{RETURN} key to activate communications \cite{adafruit1}.
 \end{description}
 
 
-\subsection{Verifying Build Environment}
+\subsection{Setting Up Raspberry Pi Linux Kernel}
+Perform the following steps to download Raspberry Pi Linux kernel on \texttt{OS2}:
+\inputminted[breaklines]{bash}{cs1.sh}
+
+
+\subsection{Building Linux Kernel}
+Execute the following commands to build the Linux Kernel image on \texttt{OS2}:
+\inputminted[breaklines]{bash}{cs3.sh}
+Once built, refer to the next section for downloading the built image to SD Card.
+
+
+\subsection{Uploading Linux Kernel to SD Card}
+Refer to the following steps for setting up \texttt{kernel8.img} on SD Card:
+\begin{enumerate}
+\item Download \texttt{Image} from \texttt{arch/arm64/boot/Image} to your local file system, either using WinCP or another file transfer tool.
+\item Rename \texttt{Image} to \texttt{kernel8.img}.
+\item Mount SD Card to your laptop,
+\item Copy \texttt{kernel8.img} to the Drive, so that it is located at the same path as \texttt{kernel7.img}.
+\end{enumerate}
 
 
 
