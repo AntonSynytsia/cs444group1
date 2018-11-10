@@ -67,6 +67,7 @@ const char* CHAR_TO_MORSE[] = {
 const int DOT_LENGTH = 1;
 const int DASH_LENGTH = 3;
 
+const int MESSAGE_DELAY = 20;
 const int WORD_DELAY = 7;
 const int LETTER_DELAY = 3;
 const int PART_DELAY = 1;
@@ -92,6 +93,7 @@ static void led_morse_function(unsigned long data)
     struct morse_trig_data *morse_data = led_cdev->trigger_data;
     unsigned long brightness = LED_OFF;
     unsigned long delay = 0;
+    char letter;
 
     /*if (unlikely(panic_morses)) {
         led_set_brightness_nosleep(led_cdev, LED_OFF);
@@ -101,16 +103,20 @@ static void led_morse_function(unsigned long data)
     if (test_and_clear_bit(LED_BLINK_BRIGHTNESS_CHANGE, &led_cdev->work_flags))
         led_cdev->blink_brightness = led_cdev->new_blink_brightness;*/
 
-    // Assuming morse_data->message != NULL
-    char letter = morse_data->message[morse_data->indexL];
+    // Assuming morse_data->message != NULL and is a null-terminated strings
+    letter = morse_data->message[morse_data->indexL];
+
+    // Start sentence for debugging
+    if (morse_data->indexL == 0 && morse_data->indexM == 0) {
+        printk(KERN_ALERT "Morse: ");
+    }
 
     if (letter == '\0') {
         // If finished processing last letter of the message, set delay to word delay and restart
-        delay = WORD_DELAY;
+        delay = MESSAGE_DELAY;
         morse_data->indexL = 0;
         morse_data->indexM = 0;
         morse_data->delayM = 0;
-        printk("\n");
     }
     else if (letter == ' ') {
         // If finished processing last letter of the word, set delay to word delay and increment letter index
@@ -118,13 +124,11 @@ static void led_morse_function(unsigned long data)
         ++(morse_data->indexL);
         morse_data->indexM = 0;
         morse_data->delayM = 0;
-        printk("/");
+        printk(KERN_CONT "/ ");
     }
-    else if (morse_data->delayM == 1) {
-        // Delay after each part of the letter is processed
-        delay = PART_DELAY;
+    else if (morse_data->delayM != 0) {
+        delay = morse_data->delayM;
         morse_data->delayM = 0;
-        printk(" ");
     }
     else {
         // Process letter part
@@ -132,7 +136,7 @@ static void led_morse_function(unsigned long data)
 
         if (parts == NULL) {
             // If invalid parts, advance to next letter
-            printk("Cannot find morse code for character, \"%c\".", letter);
+            printk(KERN_ALERT "Cannot find morse code for character, \"%c\".\n", letter);
 
             ++(morse_data->indexL);
             morse_data->indexM = 0;
@@ -146,21 +150,22 @@ static void led_morse_function(unsigned long data)
                 delay = DASH_LENGTH;
                 brightness = led_cdev->blink_brightness;
                 ++(morse_data->indexM);
-                morse_data->delayM = 1;
-                printk("-");
+                morse_data->delayM = PART_DELAY;
+                printk(KERN_CONT "-");
             }
             else if (part == '.') {
                 delay = DOT_LENGTH;
                 brightness = led_cdev->blink_brightness;
                 ++(morse_data->indexM);
-                morse_data->delayM = 1;
-                printk(".");
+                morse_data->delayM = PART_DELAY;
+                printk(KERN_CONT ".");
             }
             else {
                 // Advance to next word/letter if finished processing the current letter.
                 ++(morse_data->indexL);
                 morse_data->indexM = 0;
-                morse_data->delayM = 0;
+                morse_data->delayM = WORD_DELAY;
+                printk(KERN_CONT " ");
             }
         }
     }
@@ -213,14 +218,13 @@ static void morse_trig_activate(struct led_classdev *led_cdev)
         return;
     }
 
-    setup_timer(&morse_data->timer,
-            led_morse_function, (unsigned long) led_cdev);
-    morse_data->message = "LINUX OS";
+    setup_timer(&morse_data->timer, led_morse_function, (unsigned long) led_cdev);
+    morse_data->message = "Linux operating systems";
     morse_data->indexL = 0;
     morse_data->indexM = 0;
     morse_data->delayM = 0;
 
-    printk("\n%s\n", morse_data->message);
+    printk(KERN_ALERT "%s\n", morse_data->message);
 
     if (!led_cdev->blink_brightness)
         led_cdev->blink_brightness = led_cdev->max_brightness;

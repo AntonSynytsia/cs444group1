@@ -4,21 +4,6 @@ Anton Synytsia<br/>
 Eytan Brodsky<br/>
 David Jansen<br/>
 
-## Using Qemu Virtual Machine
-### Starting
-```bash
-cd /scratch/fall2018/group1/
-./qemu-run.sh
-```
-### Logging In
-```bash
-root
-```
-### Exiting Out
-```bash
-reboot
-```
-
 ## Assignment 3
 ### Compiling Writeup
 ```bash
@@ -65,6 +50,21 @@ make
 
 # optional cleanup
 make clean
+```
+
+## Using Qemu Virtual Machine
+### Starting
+```bash
+cd /scratch/fall2018/group1/
+./qemu-run.sh
+```
+### Logging In
+```bash
+root
+```
+### Exiting Out
+```bash
+reboot
 ```
 
 ## Useful Commands
