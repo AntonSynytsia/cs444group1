@@ -98,7 +98,7 @@ We begin the lab with setting up Raspbian on Raspberry Pi. We chose to use Raspi
 \subsection{Testing Raspbian}
 The following steps, heavily based on adafruit guide, were taken to initiate a Raspbian serial console session:
 \begin{description}
-\item Install Prolific Chipset driver \cite{adafruit1}.
+\item Install Prolific Chipset and SiLabs CP210X drivers for the TTL debug wire \cite{adafruit2}.
 \item Connect black, white, and green wires to the outer pins $3$, $4$, and $5$ respectively \cite{adafruit1}.
 \item Leave red wire unpinned, as the a separate power adapter is used instead \cite{adafruit1}. It is important that only one power source is used as the board can get damaged \cite{adafruit1}.
 \item Insert the Micro SD Card into Raspberry Pi.
@@ -136,12 +136,14 @@ Refer to the following steps for setting up \texttt{kernel8.img} on SD Card:
 \end{enumerate}
 
 
+\section{Morse Code LED Trigger}
 
-\section{Morse Code LED Blinking}
+\subsection{Code Overview}
+% TODO: David
 
+\subsection{Compiling}
+% TODO: Anton
 
-
-\section{Concurrency}
 
 
 \clearpage
