@@ -15,3 +15,6 @@ __.tex
 /Writeup2/big_file
 /Writeup2/strace_results
 /linux
+!/linux/drivers/leds/trigger/Kconfig
+!/linux/drivers/leds/trigger/Makefile
+!/linux/drivers/leds/trigger/ledtrig-morse.c
