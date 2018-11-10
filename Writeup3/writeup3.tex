@@ -54,7 +54,7 @@
     \vfill
 }
 \begin{abstract}
-This document describes how to do Morse Code blinking on Rasberry Pi.
+Setting up Morse code LED trigger on Raspberry Pi requires having access to certain technologies, especially the serial console
 \end{abstract}
 \end{singlespace}
 \end{titlepage}
@@ -64,86 +64,104 @@ This document describes how to do Morse Code blinking on Rasberry Pi.
 \clearpage
 
 \section{Required Technologies}
-In order to perform this lab, the following technology is required:
+The following technologies are required to perform this lab:
 \begin{enumerate}
-\item Raspberry Pi, preferably model 3B+
-\item Micro SD card and Card Reader, with at least 4 GB space.
+\item Raspberry Pi, preferably model 3B+,
+\item Micro SD card and card reader, with at least 4GB space.
 \item 3.3V TTL UART to USB converter for establishing serial console.
-\item Power supply cable for Raspberry Pi.
-\item Access to OS2 server.
+\item Power adapter or charger for Raspberry Pi.
+\item Access to \texttt{OS2} server.
 \end{enumerate}
 
 
 \section{Setup}
-In the following sections, we describe the steps performed for setting up Raspbian Stretch Lite on Raspberry Pi. The first section describes how to upload Raspbian to SD Card, the second section focuses on testing Raspbian with TTL Serial Cable, and the third section describes how to build Linux kernel on \texttt{OS2} and upload it to SD card.
+The following sections describe how to set up Raspbian Stretch Lite on Raspberry Pi. The first section describes how to setup Raspbian on SD card, the second section focuses on testing Raspbian with serial console, the third section describes how to build Raspberry Pi Linux kernel on \texttt{OS2}, and the fourth section describes how to setup a built Linux kernel image on SD card.
 
 
-\subsection{Preparing SD Card}
-We begin the lab with setting up Raspbian on Raspberry Pi. We chose to use Raspian Stretch Lite image for our Raspberry Pi kernel. Refer to the steps below for setting up Raspbian on SD card:
+\subsection{Downloading and Setting Up Raspbian}
+Refer to the following steps for setting up Raspbian Stretch Lite on SD card:
 \begin{enumerate}
 \item Download and extract \texttt{2018-10-09-raspbian-stretch-lite.zip} from \url{https://www.raspberrypi.org/downloads/raspbian/}.
 \item Download and install Etcher from \url{https://www.balena.io/etcher/}.
-\item Mount Micro SD card into Card Reader and mount the card reader into laptop.
+\item Mount the micro SD card to your laptop, via the SD card reader.
 \item Start Etcher and do the following:
     \begin{enumerate}
     \item Set image to \texttt{2018-10-09-raspbian-stretch-lite.img} (or alike).
-    \item Set drive to SD Card
-    \item Click ``Flash!``
+    \item Set drive to SD card.
+    \item Click textit{Flash!}
     \end{enumerate}
-\item Once the setup is complete, navigate to the SD Card drive and use text editor to append the following to \texttt{config.txt}:
+\item Once the setup is complete, navigate to the SD card drive and use text editor to append the following to \texttt{config.txt}:
 \inputminted[breaklines]{bash}{cs2.sh}
 \end{enumerate}
 
 
-\subsection{Testing Raspbian}
-The following steps, heavily based on adafruit guide, were taken to initiate a Raspbian serial console session:
+\subsection{Running Raspbian with Serial Console} \label{rasp_setup}
+The following steps, heavily based on Adafruit guide, describe how to initiate a Raspbian serial console session:
 \begin{description}
-\item Install Prolific Chipset and SiLabs CP210X drivers for the TTL debug wire \cite{adafruit2}.
+\item Install Prolific Chipset and SiLabs CP210X drivers for the TTL serial cable \cite{adafruit2}.
 \item Connect black, white, and green wires to the outer pins $3$, $4$, and $5$ respectively \cite{adafruit1}.
 \item Leave red wire unpinned, as the a separate power adapter is used instead \cite{adafruit1}. It is important that only one power source is used as the board can get damaged \cite{adafruit1}.
-\item Insert the Micro SD Card into Raspberry Pi.
-\item Insert TTL Serial Cable USB into Laptop.
-\item Connect the power adapter with Raspberry Pi.
+\item Insert the micro SD card into Raspberry Pi.
+\item Insert the TTL serial cable USB into your laptop.
 \item Start Putty and do the following:
 \begin{description}
 \item Set \textit{Connection type} to serial mode.
-\item Set \textit{Serial line} to \texttt{COM6}; {COM6} here refers to our, particular cable, which on Windows version we determined the port by accessing \textit{Device Manager} \cite{adafruit1}.
+\item Set \textit{Serial line} to \texttt{COM6}; {COM6} here refers to the port of our TTL serial cable. To determine the port of your TTL serial cable, on Windows platform, access \textit{Device Manager} and check for the available ports; for other platforms, refer to Adafruit guide \cite{adafruit1}.
 \item Set \textit{Speed} to $115200$ \cite{adafruit1}.
 \item Click \textit{Open}.
 \end{description}
-\item Within the serial console, press \textit{RETURN} key to activate communications \cite{adafruit1}.
+\item Connect the power adapter to Raspberry Pi. It is important that this step is performed after initiating the serial console session.
+\item (Optional) Within the serial console, press \textit{RETURN} key to activate communications \cite{adafruit1}.
+\item After loading, use \texttt{pi} as user name and \texttt{raspberry} as password.
 \end{description}
 
 
-\subsection{Setting Up Raspberry Pi Linux Kernel}
-Perform the following steps to download Raspberry Pi Linux kernel on \texttt{OS2}:
+\subsection{Raspberry Pi Linux Kernel}
+
+\subsubsection{Setting Up}
+Perform the following steps for downloading and setting up version 4.14.y Raspberry Pi Linux kernel on \texttt{OS2}:
 \inputminted[breaklines]{bash}{cs1.sh}
 
-
-\subsection{Building Linux Kernel}
-Execute the following commands to build the Linux Kernel image on \texttt{OS2}:
+\subsubsection{Compiling}
+Execute the following set of commands to build Raspberry Pi Linux Kernel on \texttt{OS2}:
 \inputminted[breaklines]{bash}{cs3.sh}
-Once built, refer to the next section for downloading the built image to SD Card.
+Once built, refer to the next section for setting up the built image on SD card.
 
-
-\subsection{Uploading Linux Kernel to SD Card}
-Refer to the following steps for setting up \texttt{kernel8.img} on SD Card:
+\subsubsection{Uploading to SD Card} \label{ker_upload}
+Refer to the following steps for setting up \texttt{kernel8.img} on SD card:
 \begin{enumerate}
-\item Download \texttt{Image} from \texttt{arch/arm64/boot/Image} to your local file system, either using WinCP or another file transfer tool.
+\item Download \texttt{Image} from \texttt{arch/arm64/boot/Image} to your local file system, either using WinCP or another file transfer protocol.
 \item Rename \texttt{Image} to \texttt{kernel8.img}.
-\item Mount SD Card to your laptop,
-\item Copy \texttt{kernel8.img} to the Drive, so that it is located at the same path as \texttt{kernel7.img}.
+\item Mount SD card to your laptop.
+\item Copy \texttt{kernel8.img} to SD card, so that it is located at the same path as \texttt{kernel7.img}.
 \end{enumerate}
 
 
 \section{Morse Code LED Trigger}
+The following sections describe our solution to Raspberry Pi Morse code LED trigger, as well as, instructions for compiling, setting up, and running the blinker.
 
-\subsection{Code Overview}
+\subsection{Solution}
 % TODO: David
 
 \subsection{Compiling}
-% TODO: Anton
+Perform the following steps to compile Raspberry Pi with our Morse code LED trigger:
+\begin{enumerate}
+\item Provided that Raspberry Pi Linux Kernel is cloned and checked out to the correct version at your local space, on \texttt{OS2}, copy \texttt{linux} folder, shipped with this repository, to your \texttt{linux} folder. This will overwrite and add the following files to \texttt{linux/drivers/leds/trigger/}:
+\begin{description}
+\item{ledtrig-morse.c} Our Morse code LED trigger.
+\item{Kconfig} Configures our Morse code LED trigger.
+\item{Makefile} Registers our Morse code LED trigger.
+\end{description}
+\item Executed the following set of commands to rebuild the kernel:
+\inputminted[breaklines]{bash}{cs4.sh}
+\end{enumerate}
 
+\subsection{Setting Up}
+Upload the new, built kernel image to SD card, described in \ref{ker_upload} section. You may have to delete the original \texttt{kernel8.img} from the SD card first though.
+
+\subsection{Running}
+Start a new serial console session, described in \ref{rasp_setup} section. Then run the following set of commands to activate the Morse code LED trigger:
+\inputminted[breaklines]{bash}{cs5.sh}
 
 
 \clearpage
