@@ -1,4 +1,4 @@
-\documentclass[onecolumn, draftclsnofoot, 10pt, compsoc]{IEEEtran}
+\documentclass[onecolumn, oneside, letterpaper, draftclsnofoot, 10pt]{IEEEtran}
 
 \usepackage{graphicx}
 \usepackage{url}
@@ -31,10 +31,7 @@
 \geometry{textheight=9.5in, textwidth=7in}
 
 \parindent = 0.0 in
-\parskip = 0.1 in
-
-%pull in the necessary preamble matter for pygments output
-%\input{../ThirdParty/pygments.tex}
+\parskip = 0.05 in
 
 \newcommand{\longtableendfoot}{Please continue at the next page}
 
@@ -47,15 +44,14 @@
     \huge{Writeup 3}\par
     \vspace{.5in}
     \large{CS 444}\par
-    \large{November 7, 2018}\par
+    \large{November 10, 2018}\par
     \vspace{.5in}
     \large{Anton Synytsia, Eytan Brodsky, David Jansen}\par
     \vspace{.5in}
     \vfill
 }
-\begin{abstract}
-Setting up Morse code LED trigger on Raspberry Pi requires having access to certain technologies, especially the serial console
-\end{abstract}
+%\begin{abstract}
+%\end{abstract}
 \end{singlespace}
 \end{titlepage}
 \newpage
@@ -97,23 +93,23 @@ Refer to the following steps for setting up Raspbian Stretch Lite on SD card:
 
 \subsection{Running Raspbian with Serial Console} \label{rasp_setup}
 The following steps, heavily based on Adafruit guide, describe how to initiate a Raspbian serial console session:
-\begin{description}
+\begin{enumerate}
 \item Install Prolific Chipset and SiLabs CP210X drivers for the TTL serial cable \cite{adafruit2}.
 \item Connect black, white, and green wires to the outer pins $3$, $4$, and $5$ respectively \cite{adafruit1}.
 \item Leave red wire unpinned, as the a separate power adapter is used instead \cite{adafruit1}. It is important that only one power source is used as the board can get damaged \cite{adafruit1}.
 \item Insert the micro SD card into Raspberry Pi.
 \item Insert the TTL serial cable USB into your laptop.
 \item Start Putty and do the following:
-\begin{description}
+\begin{enumerate}
 \item Set \textit{Connection type} to serial mode.
 \item Set \textit{Serial line} to \texttt{COM6}; {COM6} here refers to the port of our TTL serial cable. To determine the port of your TTL serial cable, on Windows platform, access \textit{Device Manager} and check for the available ports; for other platforms, refer to Adafruit guide \cite{adafruit1}.
 \item Set \textit{Speed} to $115200$ \cite{adafruit1}.
 \item Click \textit{Open}.
-\end{description}
+\end{enumerate}
 \item Connect the power adapter to Raspberry Pi. It is important that this step is performed after initiating the serial console session.
 \item (Optional) Within the serial console, press \textit{RETURN} key to activate communications \cite{adafruit1}.
 \item After loading, use \texttt{pi} as user name and \texttt{raspberry} as password.
-\end{description}
+\end{enumerate}
 
 
 \subsection{Raspberry Pi Linux Kernel}
