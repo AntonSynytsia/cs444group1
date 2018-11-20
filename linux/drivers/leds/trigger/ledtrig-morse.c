@@ -31,7 +31,7 @@ struct morse_trig_data {
     unsigned int indexL; // Letter index
     unsigned int indexM; // Letter part index
     unsigned int delayM; // Every letter part is followed a delay. This indicates whether to wait or proceed to the next part.
-    unsigned int invert;
+    unsigned int speed;
     struct timer_list timer;
 };
 
@@ -72,7 +72,7 @@ const int WORD_DELAY = 7;
 const int LETTER_DELAY = 3;
 const int PART_DELAY = 1;
 
-const int DELAY_MAGNITUDE = 50;
+const int DEFAULT_SPEED = 50;
 
 
 const char* char_to_morse(char c) {
@@ -171,36 +171,41 @@ static void led_morse_function(unsigned long data)
     }
 
     led_set_brightness_nosleep(led_cdev, brightness);
-    mod_timer(&morse_data->timer, jiffies + msecs_to_jiffies(delay * DELAY_MAGNITUDE));
+    mod_timer(&morse_data->timer, msecs_to_jiffies(delay * morse_data->speed));
 }
 
-static ssize_t led_invert_show(struct device *dev,
+static ssize_t led_speed_show(struct device *dev,
         struct device_attribute *attr, char *buf)
 {
     struct led_classdev *led_cdev = dev_get_drvdata(dev);
     struct morse_trig_data *morse_data = led_cdev->trigger_data;
 
-    return sprintf(buf, "%u\n", morse_data->invert);
+    return sprintf(buf, "%u\n", morse_data->speed);
 }
 
-static ssize_t led_invert_store(struct device *dev,
+static ssize_t led_speed_store(struct device *dev,
         struct device_attribute *attr, const char *buf, size_t size)
 {
     struct led_classdev *led_cdev = dev_get_drvdata(dev);
     struct morse_trig_data *morse_data = led_cdev->trigger_data;
-    unsigned long state;
+    unsigned long s;
     int ret;
 
-    ret = kstrtoul(buf, 0, &state);
+    ret = kstrtoul(buf, 0, &s);
     if (ret)
         return ret;
 
-    morse_data->invert = !!state;
+    if (s < 1)
+        s = 1;
+    else if (s > 10000)
+        s = 10000;
+
+    morse_data->speed = s;
 
     return size;
 }
 
-static DEVICE_ATTR(invert, 0644, led_invert_show, led_invert_store);
+static DEVICE_ATTR(speed, 0644, led_speed_show, led_speed_store);
 
 static void morse_trig_activate(struct led_classdev *led_cdev)
 {
@@ -212,7 +217,7 @@ static void morse_trig_activate(struct led_classdev *led_cdev)
         return;
 
     led_cdev->trigger_data = morse_data;
-    rc = device_create_file(led_cdev->dev, &dev_attr_invert);
+    rc = device_create_file(led_cdev->dev, &dev_attr_speed);
     if (rc) {
         kfree(led_cdev->trigger_data);
         return;
@@ -223,6 +228,7 @@ static void morse_trig_activate(struct led_classdev *led_cdev)
     morse_data->indexL = 0;
     morse_data->indexM = 0;
     morse_data->delayM = 0;
+    morse_data->speed = DEFAULT_SPEED;
 
     printk(KERN_ALERT "%s\n", morse_data->message);
 
@@ -239,7 +245,7 @@ static void morse_trig_deactivate(struct led_classdev *led_cdev)
 
     if (led_cdev->activated) {
         del_timer_sync(&morse_data->timer);
-        device_remove_file(led_cdev->dev, &dev_attr_invert);
+        device_remove_file(led_cdev->dev, &dev_attr_speed);
         kfree(morse_data);
         clear_bit(LED_BLINK_SW, &led_cdev->work_flags);
         led_cdev->activated = false;
