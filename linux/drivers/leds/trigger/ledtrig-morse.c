@@ -1,17 +1,3 @@
-/*
- * LED Heartbeat Trigger
- *
- * Copyright (C) 2006 Atsushi Nemoto <anemo@mba.ocn.ne.jp>
- *
- * Based on Richard Purdie's ledtrig-timer.c and some arch's
- * CONFIG_HEARTBEAT code.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
- */
-
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -21,10 +7,11 @@
 #include <linux/sched/loadavg.h>
 #include <linux/leds.h>
 #include <linux/reboot.h>
+#include <linux/ioctl.h>
 #include "../leds.h"
 
-
-static int panic_morses;
+#define FIRST_MINOR 0
+#define MINOR_CNT 1
 
 struct morse_trig_data {
     char* message;
@@ -35,33 +22,46 @@ struct morse_trig_data {
     struct timer_list timer;
 };
 
-const char* CHAR_TO_MORSE[] = {
-  ".-", //A
-  "-...", //B
-  "-.-.", //C
-  "-..", //D
-  ".", //E
-  "..-.", //F
-  "--.", //G
-  "....", //H
-  "..", //I
-  ".---", //J
-  "-.-", //K
-  ".-..", //L
-  "--", //M
-  "-.", //N
-  "---", //O
-  ".--.", //P
-  "--.-", //Q
-  ".-.", //R
-  "...", //S
-  "-", //T
-  "..-", //U
-  "...-", //V
-  ".--", //W
-  "-..-", //X
-  "-.--", //Y
-  "--.." //Z
+const char* LETTER_TO_MORSE[] = {
+    ".-", //A
+    "-...", //B
+    "-.-.", //C
+    "-..", //D
+    ".", //E
+    "..-.", //F
+    "--.", //G
+    "....", //H
+    "..", //I
+    ".---", //J
+    "-.-", //K
+    ".-..", //L
+    "--", //M
+    "-.", //N
+    "---", //O
+    ".--.", //P
+    "--.-", //Q
+    ".-.", //R
+    "...", //S
+    "-", //T
+    "..-", //U
+    "...-", //V
+    ".--", //W
+    "-..-", //X
+    "-.--", //Y
+    "--.." //Z
+};
+
+const char* DIGIT_TO_MORSE[] = {
+    "-----", // 0
+    ".----", // 1
+    "..---", // 2
+    "...--", // 3
+    "....-", // 4
+    ".....", // 5
+    "-....", // 6
+    "--...", // 7
+    "---..", // 8
+    "----." // 9
 };
 
 const int DOT_LENGTH = 1;
@@ -72,15 +72,28 @@ const int WORD_DELAY = 7;
 const int LETTER_DELAY = 3;
 const int PART_DELAY = 1;
 
+const int INVALID_CHAR_DELAY = 3;
+
 const int DEFAULT_SPEED = 50;
+
+
+
+static int panic_morses;
+static dev_t dev;
+static struct cdev c_dev;
+static struct class *cl;
+
 
 
 const char* char_to_morse(char c) {
     if (c >= 0x41 && c <= 0x5A) {
-        return CHAR_TO_MORSE[c - 0x41];
+        return LETTER_TO_MORSE[c - 0x41];
     }
     else if (c >= 0x61 && c <= 0x7A) {
-        return CHAR_TO_MORSE[c - 0x61];
+        return LETTER_TO_MORSE[c - 0x61];
+    }
+    else if (c >= 0x30 && c <= 0x39) {
+        return DIGIT_TO_MORSE[c - 0x30];
     }
     else {
         return NULL;
@@ -141,6 +154,7 @@ static void led_morse_function(unsigned long data)
             ++(morse_data->indexL);
             morse_data->indexM = 0;
             morse_data->delayM = 0;
+            delay = INVALID_CHAR_DELAY;
         }
         else {
             // If valid parts, set delay to current part
@@ -299,6 +313,102 @@ static void __exit morse_trig_exit(void)
                      &morse_panic_nb);
     led_trigger_unregister(&morse_led_trigger);
 }
+
+
+
+
+ 
+static int my_open(struct inode *i, struct file *f)
+{
+    printk("CS444 Dummy driver open\r\n");
+    return 0;
+}
+static int my_close(struct inode *i, struct file *f)
+{
+    printk("CS444 Dummy driver close\r\n");
+    return 0;
+}
+
+static ssize_t dummy_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
+{
+    printk("CS444 Dummy driver read\r\n");
+    snprintf(buf, size, "Hey there, I'm a dummy!\r\n");
+    return strlen(buf);
+}
+
+static ssize_t dummy_write(struct file *file, const char __user *buf, size_t size, loff_t *ppos)
+{
+    char lcl_buf[64];
+
+    memset(lcl_buf, 0, sizeof(lcl_buf));
+
+    if (copy_from_user(lcl_buf, buf, min(size, sizeof(lcl_buf))))
+        {
+            return -EACCES;
+        }
+
+    printk("CS444 Dummy driver write %ld bytes: %s\r\n", size, lcl_buf);
+
+    return size;
+}
+ 
+static struct file_operations dummy_fops =
+{
+    .owner = THIS_MODULE,
+    .open = my_open,
+    .read = dummy_read,
+    .write = dummy_write,
+    .release = my_close
+};
+ 
+static int __init dummy_init(void)
+{
+    int ret;
+    struct device *dev_ret;
+ 
+    // Allocate the device
+    if ((ret = alloc_chrdev_region(&dev, FIRST_MINOR, MINOR_CNT, "cs444_dummy")) < 0)
+    {
+        return ret;
+    }
+ 
+    cdev_init(&c_dev, &dummy_fops);
+ 
+    if ((ret = cdev_add(&c_dev, dev, MINOR_CNT)) < 0)
+    {
+        return ret;
+    }
+     
+    // Allocate the /dev device (/dev/cs444_dummy)
+    if (IS_ERR(cl = class_create(THIS_MODULE, "char")))
+    {
+        cdev_del(&c_dev);
+        unregister_chrdev_region(dev, MINOR_CNT);
+        return PTR_ERR(cl);
+    }
+    if (IS_ERR(dev_ret = device_create(cl, NULL, dev, NULL, "cs444_dummy")))
+    {
+        class_destroy(cl);
+        cdev_del(&c_dev);
+        unregister_chrdev_region(dev, MINOR_CNT);
+        return PTR_ERR(dev_ret);
+    }
+
+    printk("CS444 Dummy Driver has been loaded!\r\n");
+ 
+    return 0;
+}
+ 
+static void __exit dummy_exit(void)
+{
+    device_destroy(cl, dev);
+    class_destroy(cl);
+    cdev_del(&c_dev);
+    unregister_chrdev_region(dev, MINOR_CNT);
+}
+
+
+
 
 module_init(morse_trig_init);
 module_exit(morse_trig_exit);

@@ -1,7 +1,3 @@
-COMPILER = gcc
-#CFLAGS = -Wall -fpic -coverage -lm -std=c99
-CFLAGS = -Wall -lpthread -mrdrnd
-
 export PATH := /usr/local/apps/tex_live/current/bin/x86_64-linux/:$(PATH)
 
 LATEX	= latex -shell-escape
@@ -22,10 +18,16 @@ pdf: $(PDF)
 ps: $(PSF)
 
 $(TRG): %.dvi: %.tex $(EXAMPLES)
+	#one way of including source code is to use pygments
+	#pygmentize -f latex -o __${EXAMPLES}.tex ${EXAMPLES}
+	#requires that you \include{pygments.tex} in your preamble
+
 	$(LATEX) $<
 	$(BIBTEX) $(<:%.tex=%)
 	$(LATEX) $<
 	$(LATEX) $<
+	#remove the pygmentized output to avoid cluttering up the directory
+	#rm __${EXAMPLES}.tex
 
 
 $(PSF):%.ps: %.dvi
@@ -41,17 +43,9 @@ show: $(TRG)
 showps: $(PSF)
 	@for i in $(PSF) ; do $(GH) $$i & done
 
-concurrency3: concurrency3.c
-	$(COMPILER) -o concurrency3 concurrency3.c $(CFLAGS)
-
-concurrency3_2: concurrency3_2.c
-	$(COMPILER) -o concurrency3_2 concurrency3_2.c $(CFLAGS)
-
-all: concurrency3 concurrency3_2 pdf
+all: pdf
 
 clean:
-	rm -f concurrency3.exe concurrency3 *.o *.gcov *.gcda
-	rm -f concurrency3_2.exe concurrency3_2 *.o *.gcov *.gcda
 	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg *.toc
 	rm -rf _minted*
 

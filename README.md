@@ -1,11 +1,42 @@
-# CS 444 - Group1
+# CS 444 - Group 1
 
 Anton Synytsia<br/>
 Eytan Brodsky<br/>
 David Jansen<br/>
 
+
+## Assignment 4
+Refer to the following instructions for compiling the writeup:
+```bash
+cd Writeup4/
+make
+
+# optional cleanup
+make clean
+```
+
+After compiling, <tt>writeup4.pdf</tt> should appear in <tt>/Result</tt> folder.
+
+Writeup 4 is based on writeup 3 but with added information regarding the solution.
+
+
+## Concurrency 3
+Refer to the following instructions for compiling concurrency, including the writeup:
+```bash
+cd Concurrency3/
+make
+```
+After compiling, the concurrency executables and <tt>concurrency.pdf</tt> will be in the folder. For convenience, <tt>concurrency.pdf</tt> is also copied to <tt>/Result</tt> folder.
+
+Run this command before pushing git.
+```bash
+# optional cleanup
+make clean
+```
+
+
 ## Assignment 3
-### Compiling Writeup
+Refer to the following instructions for compiling the writeup:
 ```bash
 cd Writeup3/
 make
@@ -13,6 +44,8 @@ make
 # optional cleanup
 make clean
 ```
+After compiling, <tt>writeup3.pdf</tt> should appear in <tt>/Result</tt> folder.
+
 
 ## Assignment 2
 ### Compiling Concurrency
@@ -32,6 +65,7 @@ make
 # optional cleanup
 make clean
 ```
+
 
 ## Assignment 1
 ### Compiling Concurrency
@@ -67,6 +101,7 @@ root
 reboot
 ```
 
+
 ## Useful Commands
 ### Latex Version
 To use latest version of latex, execute the following command:
@@ -77,7 +112,7 @@ PATH=/usr/local/apps/tex_live/current/bin/x86_64-linux:$PATH
 ### Compressing
 Navigate to folder that contains the git repository folder and execute the following command:
 ```bash
-tar cvjf CS444_project#_1.tar.bz2 rep_folder_name
+tar cvjf CS444_project#_1.tar.bz2 rep_folder_name --exclude .git
 ```
 ### Extracting
 ```bash

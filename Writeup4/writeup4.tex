@@ -1,0 +1,313 @@
+\documentclass[onecolumn, oneside, letterpaper, draftclsnofoot, 10pt, compsoc]{IEEEtran}
+
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{setspace}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{alltt}
+\usepackage{color}
+\usepackage{enumitem}
+\usepackage{textcomp}
+\usepackage{cite}
+\usepackage{listings}
+
+\usepackage{lmodern}
+\usepackage[hidelinks]{hyperref}
+\usepackage[normalem]{ulem}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{lineno}
+\usepackage{upquote}
+\usepackage{fvextra}
+\usepackage{fancyvrb}
+\usepackage{minted}
+\usepackage{longtable,hyperref}
+
+\usepackage{geometry}
+\geometry{textheight=9.5in, textwidth=7in} % letter is 11" x 8.5"; margins are 0.75
+
+\parindent = 0.0 in
+\parskip = 0.05 in
+
+\newcommand{\longtableendfoot}{Please continue at the next page}
+
+\begin{document}
+\begin{titlepage}
+\pagenumbering{gobble}
+\begin{singlespace}
+\centering
+\scshape{
+    \huge{Writeup 4}\par
+    \vspace{.5in}
+    \large{CS 444}\par
+    \large{November 22, 2018}\par
+    \vspace{.5in}
+    \large{Anton Synytsia, Eytan Brodsky, David Jansen}\par
+    \vspace{.5in}
+    \vfill
+}
+%\begin{abstract}
+%\end{abstract}
+\end{singlespace}
+\end{titlepage}
+\newpage
+\pagenumbering{arabic}
+\tableofcontents
+\clearpage
+
+\section{Introduction}
+In the following section, we answer specific questions associated with the assignment and provide initial guidance for the TA to evaluate our work.
+\begin{enumerate}
+    \item We believe that the main point of this assignment was to get familiar with manipulating the Linux kernel. This assignment also forced us to get comfortable working with and manipulating drivers for the Linux operating system that directly interact with hardware. Specifically it was focused on getting us to work with the Linux LED driver, which interacts with the LED\textquotesingle s on a Raspberry Pi. This assignment allowed us to manipulate a driver and see the results of our work being output to hardware in real time. This way we could easily test that our work was correct and our driver was functioning properly.
+    \item Our team approached the problem by first doing research on Morse Code. Before writing any code for the LED driver we began by writing out a phrase and it\textquotesingle s corresponding Morse Code. Once we had a good understanding of how Morse Code worked we began diving in to our actual implementation. We considered doing the easiest approach of just outputting a single static phrase, we quickly changed our mind because we wanted to prepare for the next assignment. Instead we designed our driver to work with dynamically inputted phrases. We did this by creating a function that would convert each letter in the English language to it's corresponding Morse Code. Once a letter was converted it would be processed by a function that would display the code on the LED board of our Raspberry Pi. This process would be repeated for each letter/word in the inputted phrase to the function until it is completed. Once the phrase is done being outputted to the board it will restart from the beginning of the phrase ,after a delay, and start the initial process all over again. This will continue infinitely until the process is stopped.
+    \item To ensure our Morse code LED trigger is correct, we made our trigger print out, via \texttt{printk}, the Morse code version of the sentence it is signalling. We also compared the light signaling pattern to an online Morse code emulator for consistency. Our Morse code LED trigger signals \texttt{"Linux operating systems"}. If the same string is used in an online Morse code emulator, the signalling pattern would be the same. The longevity of the message may be different but the pattern is identical.
+    \item For this assignment, we learned a couple of things, described below:
+    \begin{enumerate}
+        \item There is a thing called, \texttt{jiffies}, which all the delays must be converted to when passed to the timer. According to Linux MAN page, a jiffy defines the inverse of an update frequency of the kernel. The update frequency of a kernel varies with hardware platform and kernel versions. Converting delays to jiffies allows for consistent timing under different Linux kernels and platforms. This is one of the things we learned.
+        \item Another thing we learned is configuring \texttt{Kconfig} file. When adding a configuration entry for our Morse code LED trigger, we also had to insert \texttt{default y}, so that when a \texttt{.config} is generated, the Morse code is enabled without us having to modify the generated \texttt{.config} file afterwards.
+    \end{enumerate}
+    \item To evaluate and grade our work, the TA can follow the sections below, in chronological order, and replicate our Morse code LED trigger for their Raspberry Pi. If the TA already have the Linux Kernel installed, Raspbian Light setup, and the serial console operating, they can skip to section \ref{setup} and get right into section \ref{morse_compile} for testing our Morse Code LED trigger on their own Raspberry Pi. If the TA is experienced, they can review each section for legitimacy without replicating and contact Group 1 for a demo of the Morse code LED trigger.
+\end{enumerate}
+
+\section{Required Technologies}
+The following technologies are required to perform this lab:
+\begin{enumerate}
+\item Raspberry Pi, preferably model 3B+,
+\item Micro SD card and card reader, with at least 4GB space.
+\item 3.3V TTL UART to USB converter for establishing serial console.
+\item Power adapter or charger for Raspberry Pi.
+\item Access to \texttt{OS2} server.
+\end{enumerate}
+
+
+\section{Setup} \label{setup}
+The following sections describe how to set up Raspbian Stretch Lite on Raspberry Pi. The first section describes how to setup Raspbian on SD card, the second section focuses on testing Raspbian with serial console, the third section describes how to build Raspberry Pi Linux kernel on \texttt{OS2}, and the fourth section describes how to setup a built Linux kernel image on SD card.
+
+
+\subsection{Downloading and Setting Up Raspbian}
+Refer to the following steps for setting up Raspbian Stretch Lite on SD card:
+\begin{enumerate}
+\item Download and extract \texttt{2018-10-09-raspbian-stretch-lite.zip} from \url{https://www.raspberrypi.org/downloads/raspbian/}.
+\item Download and install Etcher from \url{https://www.balena.io/etcher/}.
+\item Mount the micro SD card to your laptop, via the SD card reader.
+\item Start Etcher and do the following:
+    \begin{enumerate}
+    \item Set image to \texttt{2018-10-09-raspbian-stretch-lite.img} (or alike).
+    \item Set drive to SD card.
+    \item Click textit{Flash!}
+    \end{enumerate}
+\item Once the setup is complete, navigate to the SD card drive and use text editor to append the following to \texttt{config.txt}:
+\inputminted[breaklines]{bash}{cs2.sh}
+\end{enumerate}
+
+
+\subsection{Running Raspbian with Serial Console} \label{rasp_setup}
+The following steps, heavily based on Adafruit guide, describe how to initiate a Raspbian serial console session:
+\begin{enumerate}
+\item Install Prolific Chipset and SiLabs CP210X drivers for the TTL serial cable \cite{adafruit2}.
+\item Connect black, white, and green wires to the outer pins $3$, $4$, and $5$ respectively \cite{adafruit1}.
+\item Leave red wire unpinned, as the a separate power adapter is used instead \cite{adafruit1}. It is important that only one power source is used as the board can get damaged \cite{adafruit1}.
+\item Insert the micro SD card into Raspberry Pi.
+\item Insert the TTL serial cable USB into your laptop.
+\item Start Putty and do the following:
+\begin{enumerate}
+\item Set \textit{Connection type} to serial mode.
+\item Set \textit{Serial line} to \texttt{COM6}; {COM6} here refers to the port of our TTL serial cable. To determine the port of your TTL serial cable, on Windows platform, access \textit{Device Manager} and check for the available ports; for other platforms, refer to Adafruit guide \cite{adafruit1}.
+\item Set \textit{Speed} to $115200$ \cite{adafruit1}.
+\item Click \textit{Open}.
+\end{enumerate}
+\item Connect the power adapter to Raspberry Pi. It is important that this step is performed after initiating the serial console session.
+\item (Optional) Within the serial console, press \textit{RETURN} key to activate communications \cite{adafruit1}.
+\item After loading, use \texttt{pi} as user name and \texttt{raspberry} as password.
+\end{enumerate}
+
+
+\subsection{Raspberry Pi Linux Kernel}
+
+\subsubsection{Setting Up}
+Perform the following steps for downloading and setting up version 4.14.y Raspberry Pi Linux kernel on \texttt{OS2}:
+\inputminted[breaklines]{bash}{cs1.sh}
+
+\subsubsection{Compiling}
+Execute the following set of commands to build Raspberry Pi Linux Kernel on \texttt{OS2}:
+\inputminted[breaklines]{bash}{cs3.sh}
+Once built, refer to the next section for setting up the built image on SD card.
+
+\subsubsection{Uploading to SD Card} \label{ker_upload}
+Refer to the following steps for setting up \texttt{kernel8.img} on SD card:
+\begin{enumerate}
+\item Download \texttt{Image} from \texttt{arch/arm64/boot/Image} to your local file system, either using WinCP or another file transfer protocol.
+\item Rename \texttt{Image} to \texttt{kernel8.img}.
+\item Mount SD card to your laptop.
+\item Copy \texttt{kernel8.img} to SD card, so that it is located at the same path as \texttt{kernel7.img}.
+\end{enumerate}
+
+\section{Morse Code LED Trigger} \label{morse}
+The following sections describe our solution to Raspberry Pi Morse code LED trigger, as well as, instructions for compiling, setting up, and running the blinker.
+
+\subsection{Solution}
+\begin{enumerate}
+    \item We began by creating an array of each letter in the alphabet represented by it\textquotesingle s Morse Code value.
+    \item We then created a function that would convert ASCII characters to their Morse Code value (This was done in order to make assignment 3 easier). This was done by subtracting each ASCII character by 0x41, this would make it so the new value would point to the index of the Morse code value of the ASCII character. For the space character we subtracted by 0x61.
+    \item For displaying the Morse Code on the LED of the Raspberry Pi we used a struct, this struct is shown/explained below.
+     \begin{minted}{C}
+   struct morse_trig_data {
+    char* message;
+    unsigned int indexL; // Letter index
+    unsigned int indexM; // Letter part index
+    unsigned int delayM; // This indicates whether to wait  or proceed to the next part of the letter.
+    unsigned int invert;
+    struct timer_list timer;
+};
+    \end{minted}
+    \item We also used a few global variables in order to set both the length of when the LED is turned on and when it is turned off while transmitting the Morse Code. These variables are shown/explained below.
+
+    \begin{minted}{C}
+    const int DOT_LENGTH = 1; //Time LED will light up for a dot.
+    const int DASH_LENGTH = 3; //Time LED will light up for a dash.
+    const int MESSAGE_DELAY = 20; //Delay in between each retransmission of the message.
+    const int WORD_DELAY = 7; //Delay in between each word.
+    const int LETTER_DELAY = 3; //Delay in between each letter.
+    const int PART_DELAY = 1; //Delay in between each dot or dash for a letter.
+    const int DELAY_MAGNITUDE = 50;
+    \end{minted}
+    \item Finally we get to our function that converts the Morse code over to the LED on the Raspberry Pi. The function starts by iterating through a word or phrase input to the function. First it checks if the word/phrase we are processing is already completed by checking for a null character, if it has it waits 20 units of time. Next the function will check if the character we are checking is a space, if it is, it will wait 7 units of time.  If all of these tests pass the function knows it is processing a letter. If the function is processing a letter it will use the conversion function to convert the letter to it\textquotesingle s Morse Code equivalent. Once the conversion is complete it will check to see if every part of the code is valid. If the code is valid it will check to see if the part of code it is processing is a dot or a dash. Dots will light up the LED for one unit of time, then the LED will be delayed/shut off for one unit of time. Dashes will light up the LED for three units of time, then the LED will be delayed/shut off for one unit of time. During this process the function also checks to see if the word/letter is complete yet, if the word is complete the LED will be delayed/shut off for a certain period of time. The delay between letters is 3 units of time, the delay between words is 7 units of time. This same process will be repeated for every letter/word left in the inputted phrase.
+\end{enumerate}
+
+
+\subsection{Compiling} \label{morse_compile}
+Perform the following steps to compile Raspberry Pi with our Morse code LED trigger:
+\begin{enumerate}
+\item Provided that Raspberry Pi Linux Kernel is cloned and checked out to the correct version at your local space, on \texttt{OS2}, copy \texttt{linux} folder, shipped with this repository, to your \texttt{linux} folder. This will overwrite and add the following files to \texttt{linux/drivers/leds/trigger/}:
+\begin{description}
+\item{ledtrig-morse.c} Our Morse code LED trigger.
+\item{Kconfig} Configures our Morse code LED trigger.
+\item{Makefile} Registers our Morse code LED trigger.
+\end{description}
+\item Executed the following set of commands to rebuild the kernel:
+\inputminted[breaklines]{bash}{cs4.sh}
+\end{enumerate}
+
+\subsection{Setting Up}
+Upload the new, built kernel image to SD card, described in section \ref{ker_upload}. You may have to delete the original \texttt{kernel8.img} from the SD card first though.
+
+\subsection{Running}
+Start a new serial console session, described in section \ref{rasp_setup}. Then run the following set of commands to activate the Morse code LED trigger:
+\inputminted[breaklines]{bash}{cs5.sh}
+
+\section{Version Control}
+%% This file was generated by the script latex-git-log
+\begin{tabular}{lp{12cm}}
+  \label{tabular:legend:git-log}
+  \textbf{acronym} & \textbf{meaning} \\
+  V & \texttt{version} \\
+  tag & \texttt{git tag} \\
+  MF & Number of \texttt{modified files}. \\
+  AL & Number of \texttt{added lines}. \\
+  DL & Number of \texttt{deleted lines}. \\
+\end{tabular}
+
+\bigskip
+
+%\iflanguage{ngerman}{\shorthandoff{"}}{}
+\begin{longtable}{|rllp{8.5cm}rrr|}
+\hline \multicolumn{1}{|c}{\textbf{V}} & \multicolumn{1}{c}{\textbf{tag}}
+& \multicolumn{1}{c}{\textbf{date}}
+& \multicolumn{1}{c}{\textbf{commit message}} & \multicolumn{1}{c}{\textbf{MF}}
+& \multicolumn{1}{c}{\textbf{AL}} & \multicolumn{1}{c|}{\textbf{DL}} \\ \hline
+\endhead
+
+\hline \multicolumn{7}{|r|}{\longtableendfoot} \\ \hline
+\endfoot
+
+\hline% \hline
+\endlastfoot
+
+\hline 1 &  & 2018-10-08 & Initial commit & 1 & 1 & 0 \\
+\hline 2 &  & 2018-10-08 & Create .gitignore & 1 & 6 & 0 \\
+\hline 3 &  & 2018-10-08 & Update state & 1 & 0 & 1 \\
+\hline 4 &  & 2018-10-08 & Setup readme & 1 & 5 & 0 \\
+\hline 5 &  & 2018-10-08 & Update README.md & 1 & 2 & 0 \\
+\hline 6 &  & 2018-10-08 & Uploaded concurrency & 2 & 225 & 0 \\
+\hline 7 &  & 2018-10-08 & changed permissions & 4 & 0 & 0 \\
+\hline 8 &  & 2018-10-09 & Setup writeup TeX & 2 & 126 & 0 \\
+\hline 9 &  & 2018-10-09 & Added pygments & 1 & 98 & 0 \\
+\hline 10 &  & 2018-10-09 & included pygements to preamble & 1 & 8 & 6 \\
+\hline 11 &  & 2018-10-09 & First sucessful compile of writeup1 & 6 & 2008 & 2 \\
+\hline 12 &  & 2018-10-09 & Updated gitignore & 5 & 3 & 2005 \\
+\hline 13 &  & 2018-10-09 & Setup Writeup & 1 & 10 & 20 \\
+\hline 14 &  & 2018-10-09 & Added git attributes to enforce EOL & 1 & 7 & 0 \\
+\hline 15 &  & 2018-10-09 & EOL deal & 2 & 1 & 2 \\
+\hline 16 &  & 2018-10-09 & Trying to fix TEX compiling & 2 & 79 & 1 \\
+\hline 17 &  & 2018-10-09 & Added sections to writeup & 3 & 8 & 81 \\
+\hline 18 &  & 2018-10-09 & Added the writeup for Command Logs and for the Qemu flags & 11 & 97 & 10 \\
+\hline 19 &  & 2018-10-10 & Work on concurrency writeup & 8 & 30 & 56 \\
+\hline 20 &  & 2018-10-10 & More work on Concurrency writeup & 2 & 12 & 7 \\
+\hline 21 &  & 2018-10-10 & Made Concurrency use circular queue & 1 & 41 & 34 \\
+\hline 22 &  & 2018-10-10 & Fixed concurrency print type & 1 & 9 & 6 \\
+\hline 23 &  & 2018-10-10 & Renamed Assignment1 folder to Concurency and finished my writeup & 7 & 251 & 244 \\
+\hline 24 &  & 2018-10-11 & Disabled BIB command in makefile & 2 & 3 & 3 \\
+\hline 25 &  & 2018-10-11 & Added compile instructions & 1 & 26 & 3 \\
+\hline 26 &  & 2018-10-11 & README adjustments & 1 & 3 & 3 \\
+\hline 27 &  & 2018-10-13 & corrected name & 1 & 1 & 1 \\
+\hline 28 &  & 2018-10-13 & explain -localtime and -append root=/dev/vda rw console=ttyS0 debug & 1 & 2 & 2 \\
+\hline 29 &  & 2018-10-13 & add work log. & 1 & 6 & 0 \\
+\hline 30 &  & 2018-10-13 & Added the version control table & 1 & 31 & 1 \\
+\hline 31 &  & 2018-10-13 & Changed up how the lists were made & 1 & 48 & 31 \\
+\hline 32 &  & 2018-10-15 & Refactored rdrand to use X86 intrinsic and created a general rand function & 1 & 88 & 69 \\
+\hline 33 &  & 2018-10-15 & Updated concurrency writeup to reflect the refactored code. & 1 & 7 & 10 \\
+\hline 34 &  & 2018-10-15 & Updated work log & 5 & 477 & 77 \\
+\hline 35 &  & 2018-10-15 & Removed thirdparty & 1 & 0 & 362 \\
+\hline 36 &  & 2018-10-22 & Added concurrency2 & 2 & 219 & 0 \\
+\hline 37 &  & 2018-10-23 & Setup writeup2 and update comments in concurrency & 5 & 233 & 4 \\
+\hline 38 &  & 2018-10-27 & Unignored Linux Yocto with our sched & 7 & 2 & 1 \\
+\hline 39 &  & 2018-10-27 & Unignoring yocto & 1 & 0 & 2 \\
+\hline 40 &  & 2018-10-27 & yocto... & 1 & 1 & 0 \\
+\hline 41 &  & 2018-10-27 & Added clook scheduler & 4 & 582 & 2 \\
+\hline 42 &  & 2018-10-27 & Setup Writeup2 & 11 & 9310 & 501 \\
+\hline 43 &  & 2018-10-27 & Updated makefiles & 3 & 8 & 9 \\
+\hline 44 &  & 2018-10-27 & Making refs work & 1 & 1 & 1 \\
+\hline 45 &  & 2018-10-27 & Added Eyton's scheduler tester & 2 & 16 & 0 \\
+\hline 46 &  & 2018-10-27 & Added David's makefile & 2 & 27 & 1 \\
+\hline 47 &  & 2018-10-28 & Fixed compile errors in CLOOK and modifed Kconfig for inclusion & 4 & 84 & 6 \\
+\hline 48 &  & 2018-10-28 & Added command for starting VM & 1 & 5 & 0 \\
+\hline 49 &  & 2018-10-29 & Made clook print if unexpected access order & 2 & 8 & 0 \\
+\hline 50 &  & 2018-10-29 & Clook Scheduler Writeup & 11 & 165 & 8 \\
+\hline 51 &  & 2018-10-29 & Fixes to README & 1 & 7 & 7 \\
+\hline 52 &  & 2018-10-29 & Version control log & 1 & 79 & 0 \\
+\hline 53 &  & 2018-10-29 & More work on Writeup2 & 18 & 101 & 91 \\
+\hline 54 &  & 2018-10-29 & Updated makefiles and writeup for assign 1 and 2 & 13 & 69 & 9021 \\
+\hline 55 &  & 2018-10-29 & Modified assignment 1 make & 2 & 9 & 3 \\
+\hline 56 &  & 2018-10-29 & Added the Concurrency Section 2 & 1 & 35 & 0 \\
+\hline 57 &  & 2018-10-29 & Changed code styling & 1 & 2 & 2 \\
+\hline 58 &  & 2018-10-29 & Update writeup2.tex & 1 & 21 & 0 \\
+\hline 59 &  & 2018-10-29 & Minted Python Testing Script & 1 & 6 & 7 \\
+\hline 60 &  & 2018-10-29 & Update writeup2.tex & 1 & 1 & 14 \\
+\hline 61 &  & 2018-10-30 & Added raspberry linux to ignore file & 10 & 1 & 1 \\
+\hline 62 &  & 2018-10-30 & Started Writeup3 & 5 & 175 & 0 \\
+\hline 63 &  & 2018-11-07 & Update README.md & 1 & 4 & 0 \\
+\hline 64 &  & 2018-11-07 & Created writeup for Downloading Raspberry Pi Linux Kernel, Preparing SD Card, and Testing Raspbian. & 4 & 74 & 10 \\
+\hline 65 &  & 2018-11-07 & Updated makefiles so that PDFs are copied to resulting folder & 7 & 4 & 1 \\
+\hline 66 &  & 2018-11-08 & Completed Part 1 for Writeup & 3 & 52 & 21 \\
+\hline 67 &  & 2018-11-08 & updated compress / extract commands in README & 1 & 3 & 8 \\
+\hline 68 &  & 2018-11-10 & Work on Writeup3 & 2 & 16 & 4 \\
+\hline 69 &  & 2018-11-10 & Uploading modifid Linux files & 7 & 712 & 0 \\
+\hline 70 &  & 2018-11-10 & Finalized morse code trigger & 2 & 38 & 34 \\
+\hline 71 &  & 2018-11-10 & Writeup for compiling and running Morse code LED trigger & 3 & 61 & 35 \\
+\hline 72 &  & 2018-11-10 & Recompiled writeup3 & 1 & 0 & 0 \\
+\hline 73 &  & 2018-11-10 & Fixed references & 1 & 2 & 2 \\
+\hline 74 &  & 2018-11-10 & Fixed formatting & 2 & 11 & 17 \\
+\hline 75 &  & 2018-11-10 & Updated PDF & 1 & 0 & 0 \\
+\end{longtable}
+
+
+\clearpage
+\medskip
+\bibliographystyle{IEEEtran}
+\bibliography{ref}
+
+\end{document}
