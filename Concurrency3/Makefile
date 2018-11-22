@@ -23,7 +23,7 @@ ps: $(PSF)
 
 $(TRG): %.dvi: %.tex $(EXAMPLES)
 	$(LATEX) $<
-	$(BIBTEX) $(<:%.tex=%)
+	#$(BIBTEX) $(<:%.tex=%)
 	$(LATEX) $<
 	$(LATEX) $<
 

@@ -24,7 +24,7 @@ Writeup 4 is based on writeup 3 but with added information regarding the solutio
 Refer to the following instructions for compiling concurrency, including the writeup:
 ```bash
 cd Concurrency3/
-make
+make all
 ```
 After compiling, the concurrency executables and <tt>concurrency.pdf</tt> will be in the folder. For convenience, <tt>concurrency.pdf</tt> is also copied to <tt>/Result</tt> folder.
 
