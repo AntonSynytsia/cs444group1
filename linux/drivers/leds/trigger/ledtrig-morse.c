@@ -231,7 +231,7 @@ static void led_morse_function(unsigned long data)
 
     // Start sentence for debugging
     if (morse_data->indexL == 0 && morse_data->indexM == 0) {
-        printk(KERN_ALERT "Morse: ");
+        //printk(KERN_ALERT "Morse: ");
     }
 
     if (letter == '\0') {
@@ -247,7 +247,7 @@ static void led_morse_function(unsigned long data)
         ++(morse_data->indexL);
         morse_data->indexM = 0;
         morse_data->delayM = 0;
-        printk(KERN_CONT "/ ");
+        //printk(KERN_CONT "/ ");
     }
     else if (morse_data->delayM != 0) {
         delay = morse_data->delayM;
@@ -275,21 +275,21 @@ static void led_morse_function(unsigned long data)
                 brightness = led_cdev->blink_brightness;
                 ++(morse_data->indexM);
                 morse_data->delayM = PART_DELAY;
-                printk(KERN_CONT "-");
+                //printk(KERN_CONT "-");
             }
             else if (part == '.') {
                 delay = DOT_LENGTH;
                 brightness = led_cdev->blink_brightness;
                 ++(morse_data->indexM);
                 morse_data->delayM = PART_DELAY;
-                printk(KERN_CONT ".");
+                //printk(KERN_CONT ".");
             }
             else {
                 // Advance to next word/letter if finished processing the current letter.
                 ++(morse_data->indexL);
                 morse_data->indexM = 0;
                 morse_data->delayM = WORD_DELAY;
-                printk(KERN_CONT " ");
+                //printk(KERN_CONT " ");
             }
         }
     }
