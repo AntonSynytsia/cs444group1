@@ -8,10 +8,26 @@
 #include <linux/leds.h>
 #include <linux/reboot.h>
 #include <linux/ioctl.h>
+#include <linux/version.h>
+#include <linux/fs.h>
+#include <linux/cdev.h>
+#include <linux/device.h>
+#include <linux/errno.h>
+#include <linux/uaccess.h>
+#include <linux/types.h>
 #include "../leds.h"
 
 #define FIRST_MINOR 0
 #define MINOR_CNT 1
+
+typedef struct
+{
+    int status, dignity, ego;
+} dummy_arg_t;
+
+#define DUMMY_GET_VARIABLES _IOR('q', 1, dummy_arg_t *)
+#define DUMMY_CLR_VARIABLES _IO('q', 2)
+#define DUMMY_SET_VARIABLES _IOW('q', 3, dummy_arg_t *)
 
 struct morse_trig_data {
     char* message;
