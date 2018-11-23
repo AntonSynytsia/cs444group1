@@ -136,7 +136,7 @@ static struct class *cl;
  -------------------------------------------------------------------------------
 */
 
-static void morse_trig_deactivate(struct led_classdev *led_cdev)
+static void morse_trig_deactivate(struct led_classdev *led_cdev);
 
 
 /*
