@@ -140,7 +140,9 @@ Once built, refer to the next section for setting up the built image on SD card.
 \subsubsection{Uploading to SD Card} \label{ker_upload}
 Refer to the following steps for setting up \texttt{kernel8.img} on SD card:
 \begin{enumerate}
-\item Download \texttt{Image} from \texttt{arch/arm64/boot/Image} to your local file system, either using WinCP or another file transfer protocol.
+\item Download \texttt{Image} from \texttt{arch/arm64/boot/Image} to your local file system, either using WinCP or another file transfer protocol. An easy way to do it is to first copy to base path and then download with WinCP to your computer:
+\inputminted[breaklines]{bash}{cs6.sh}
+
 \item Rename \texttt{Image} to \texttt{kernel8.img}.
 \item Mount SD card to your laptop.
 \item Copy \texttt{kernel8.img} to SD card, so that it is located at the same path as \texttt{kernel7.img}.
@@ -196,7 +198,7 @@ Perform the following steps to compile Raspberry Pi with our Morse code LED trig
 Upload the new, built kernel image to SD card, described in section \ref{ker_upload}. You may have to delete the original \texttt{kernel8.img} from the SD card first though.
 
 \subsection{Running}
-Start a new serial console session, described in section \ref{rasp_setup}. Then run the following set of commands to activate the Morse code LED trigger:
+Start a new serial console session, described in section \ref{rasp_setup}. Then run the following set of commands to activate and control the Morse code LED trigger:
 \inputminted[breaklines]{bash}{cs5.sh}
 
 \section{Version Control}

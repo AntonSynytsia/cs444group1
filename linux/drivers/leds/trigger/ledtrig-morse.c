@@ -91,14 +91,13 @@ const int PART_DELAY = 1;
 const int INVALID_CHAR_DELAY = 3;
 
 const int DEFAULT_SPEED = 50;
-
+const char* DEFAULT_MESSAGE = "Linux Operating Systems Group 1";
 
 
 static int panic_morses;
 static dev_t dev;
 static struct cdev c_dev;
 static struct class *cl;
-
 
 
 const char* char_to_morse(char c) {
@@ -116,8 +115,23 @@ const char* char_to_morse(char c) {
     }
 }
 
+static void store_message(struct morse_trig_data *morse_data, const char *buf, size_t size) {
+
+    if (morse_data->message)
+        kfree(morse_data->message);
+
+    morse_data->message = kstrndup(buf, size, GFP_KERNEL);
+    morse_data->indexL = 0;
+    morse_data->indexM = 0;
+    morse_data->delayM = 0;
+}
 
 
+/*
+ -------------------------------------------------------------------------------
+ Character Device
+ -------------------------------------------------------------------------------
+*/
 
 static int my_open(struct inode *i, struct file *f)
 {
@@ -208,7 +222,15 @@ static void __exit dummy_exit(void)
     unregister_chrdev_region(dev, MINOR_CNT);
 }
 
+//module_init(dummy_init);
+//module_exit(dummy_exit);
 
+
+/*
+ -------------------------------------------------------------------------------
+ LED Morse Trigger
+ -------------------------------------------------------------------------------
+*/
 
 static void led_morse_function(unsigned long data)
 {
@@ -218,13 +240,13 @@ static void led_morse_function(unsigned long data)
     unsigned long delay = 0;
     char letter;
 
-    /*if (unlikely(panic_morses)) {
+    if (unlikely(panic_morses)) {
         led_set_brightness_nosleep(led_cdev, LED_OFF);
         return;
     }
 
     if (test_and_clear_bit(LED_BLINK_BRIGHTNESS_CHANGE, &led_cdev->work_flags))
-        led_cdev->blink_brightness = led_cdev->new_blink_brightness;*/
+        led_cdev->blink_brightness = led_cdev->new_blink_brightness;
 
     // Assuming morse_data->message != NULL and is a null-terminated strings
     letter = morse_data->message[morse_data->indexL];
@@ -232,6 +254,7 @@ static void led_morse_function(unsigned long data)
     // Start sentence for debugging
     if (morse_data->indexL == 0 && morse_data->indexM == 0) {
         //printk(KERN_ALERT "Morse: ");
+        printk(KERN_ALERT "MESSAGE BEGIN ...\n");
     }
 
     if (letter == '\0') {
@@ -240,6 +263,7 @@ static void led_morse_function(unsigned long data)
         morse_data->indexL = 0;
         morse_data->indexM = 0;
         morse_data->delayM = 0;
+        printk(KERN_ALERT "... MESSAGE END\n");
     }
     else if (letter == ' ') {
         // If finished processing last letter of the word, set delay to word delay and increment letter index
@@ -259,7 +283,7 @@ static void led_morse_function(unsigned long data)
 
         if (parts == NULL) {
             // If invalid parts, advance to next letter
-            printk(KERN_ALERT "Cannot find morse code for character, \"%c\".\n", letter);
+            printk(KERN_ALERT "Cannot find Morse code for character, \"%c\".\n", letter);
 
             ++(morse_data->indexL);
             morse_data->indexM = 0;
@@ -304,7 +328,7 @@ static ssize_t led_speed_show(struct device *dev,
     struct led_classdev *led_cdev = dev_get_drvdata(dev);
     struct morse_trig_data *morse_data = led_cdev->trigger_data;
 
-    return sprintf(buf, "%u\n", morse_data->speed);
+    return sprintf(buf, "%d\n", morse_data->speed);
 }
 
 static ssize_t led_speed_store(struct device *dev,
@@ -329,7 +353,28 @@ static ssize_t led_speed_store(struct device *dev,
     return size;
 }
 
+static ssize_t led_message_show(struct device *dev,
+        struct device_attribute *attr, char *buf)
+{
+    struct led_classdev *led_cdev = dev_get_drvdata(dev);
+    struct morse_trig_data *morse_data = led_cdev->trigger_data;
+
+    return sprintf(buf, "%s\n", morse_data->message);
+}
+
+static ssize_t led_message_store(struct device *dev,
+        struct device_attribute *attr, const char *buf, size_t size)
+{
+    struct led_classdev *led_cdev = dev_get_drvdata(dev);
+    struct morse_trig_data *morse_data = led_cdev->trigger_data;
+
+    store_message(morse_data, buf, size);
+
+    return size;
+}
+
 static DEVICE_ATTR(speed, 0644, led_speed_show, led_speed_store);
+static DEVICE_ATTR(message, 0644, led_message_show, led_message_store);
 
 static void morse_trig_activate(struct led_classdev *led_cdev)
 {
@@ -341,20 +386,28 @@ static void morse_trig_activate(struct led_classdev *led_cdev)
         return;
 
     led_cdev->trigger_data = morse_data;
+
     rc = device_create_file(led_cdev->dev, &dev_attr_speed);
     if (rc) {
         kfree(led_cdev->trigger_data);
         return;
     }
 
+    rc = device_create_file(led_cdev->dev, &dev_attr_message);
+    if (rc) {
+        kfree(led_cdev->trigger_data);
+        return;
+    }
+
     setup_timer(&morse_data->timer, led_morse_function, (unsigned long) led_cdev);
-    morse_data->message = "Linux operating systems";
+    morse_data->message = NULL;
     morse_data->indexL = 0;
     morse_data->indexM = 0;
     morse_data->delayM = 0;
     morse_data->speed = DEFAULT_SPEED;
+    store_message(morse_data, DEFAULT_MESSAGE, 256);
 
-    printk(KERN_ALERT "%s\n", morse_data->message);
+    printk(KERN_ALERT "Message: %s, Speed: %d\n", morse_data->message, morse_data->speed);
 
     if (!led_cdev->blink_brightness)
         led_cdev->blink_brightness = led_cdev->max_brightness;
@@ -370,6 +423,11 @@ static void morse_trig_deactivate(struct led_classdev *led_cdev)
     if (led_cdev->activated) {
         del_timer_sync(&morse_data->timer);
         device_remove_file(led_cdev->dev, &dev_attr_speed);
+        device_remove_file(led_cdev->dev, &dev_attr_message);
+        if (morse_data->message) {
+            kfree(morse_data->message);
+            morse_data->message = NULL;
+        }
         kfree(morse_data);
         clear_bit(LED_BLINK_SW, &led_cdev->work_flags);
         led_cdev->activated = false;
@@ -428,8 +486,6 @@ static void __exit morse_trig_exit(void)
                      &morse_panic_nb);
     led_trigger_unregister(&morse_led_trigger);
 }
-
-
 
 module_init(morse_trig_init);
 module_exit(morse_trig_exit);

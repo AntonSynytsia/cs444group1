@@ -11,7 +11,8 @@ Refer to the following instructions for compiling the writeup:
 cd Writeup4/
 make
 
-# optional cleanup
+Run the following command before pushing git:
+```bash
 make clean
 ```
 
@@ -26,11 +27,10 @@ Refer to the following instructions for compiling concurrency, including the wri
 cd Concurrency3/
 make all
 ```
-After compiling, the concurrency executables and <tt>concurrency.pdf</tt> will be in the folder. For convenience, <tt>concurrency.pdf</tt> is also copied to <tt>/Result</tt> folder.
+After compiling, the concurrency executables and <tt>concurrency3.pdf</tt> will be in the folder. For convenience, <tt>concurrency3.pdf</tt> is also copied to <tt>/Result</tt> folder.
 
-Run this command before pushing git.
+Run the following command before pushing git:
 ```bash
-# optional cleanup
 make clean
 ```
 
