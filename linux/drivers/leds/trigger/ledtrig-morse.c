@@ -135,18 +135,18 @@ static void store_message(struct morse_trig_data *morse_data, const char *buf, s
 
 static int my_open(struct inode *i, struct file *f)
 {
-    printk("CS444 Dummy driver open\r\n");
+    printk(KERN_ALERT "CS444 Dummy driver open\r\n");
     return 0;
 }
 static int my_close(struct inode *i, struct file *f)
 {
-    printk("CS444 Dummy driver close\r\n");
+    printk(KERN_ALERT "CS444 Dummy driver close\r\n");
     return 0;
 }
 
 static ssize_t dummy_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
 {
-    printk("CS444 Dummy driver read\r\n");
+    printk(KERN_ALERT "CS444 Dummy driver read\r\n");
     snprintf(buf, size, "Hey there, I'm a dummy!\r\n");
     return strlen(buf);
 }
@@ -162,7 +162,7 @@ static ssize_t dummy_write(struct file *file, const char __user *buf, size_t siz
             return -EACCES;
         }
 
-    printk("CS444 Dummy driver write %ld bytes: %s\r\n", size, lcl_buf);
+    printk(KERN_ALERT "CS444 Dummy driver write %ld bytes: %s\r\n", size, lcl_buf);
 
     return size;
 }
@@ -209,7 +209,7 @@ static int __init dummy_init(void)
         return PTR_ERR(dev_ret);
     }
 
-    printk("CS444 Dummy Driver has been loaded!\r\n");
+    printk(KERN_ALERT "CS444 Dummy Driver has been loaded!\r\n");
 
     return 0;
 }
@@ -254,16 +254,16 @@ static void led_morse_function(unsigned long data)
     // Start sentence for debugging
     if (morse_data->indexL == 0 && morse_data->indexM == 0) {
         //printk(KERN_ALERT "Morse: ");
-        printk(KERN_ALERT "MESSAGE BEGIN ...\n");
+        //printk(KERN_ALERT "MESSAGE BEGIN ...\n");
     }
 
-    if (letter == '\0') {
+    if (letter == '\0' || letter == '\n') {
         // If finished processing last letter of the message, set delay to word delay and restart
         delay = MESSAGE_DELAY;
         morse_data->indexL = 0;
         morse_data->indexM = 0;
         morse_data->delayM = 0;
-        printk(KERN_ALERT "... MESSAGE END\n");
+        //printk(KERN_ALERT "... MESSAGE END\n");
     }
     else if (letter == ' ') {
         // If finished processing last letter of the word, set delay to word delay and increment letter index
@@ -283,7 +283,7 @@ static void led_morse_function(unsigned long data)
 
         if (parts == NULL) {
             // If invalid parts, advance to next letter
-            printk(KERN_ALERT "Cannot find Morse code for character, \"%c\".\n", letter);
+            printk(KERN_ALERT "Unrecognized Morse code character, \"%c\".\n", letter);
 
             ++(morse_data->indexL);
             morse_data->indexM = 0;
