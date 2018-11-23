@@ -295,7 +295,7 @@ static void led_morse_function(unsigned long data)
     }
 
     led_set_brightness_nosleep(led_cdev, brightness);
-    mod_timer(&morse_data->timer, msecs_to_jiffies(delay * morse_data->speed));
+    mod_timer(&morse_data->timer, jiffies + msecs_to_jiffies(delay * morse_data->speed));
 }
 
 static ssize_t led_speed_show(struct device *dev,
