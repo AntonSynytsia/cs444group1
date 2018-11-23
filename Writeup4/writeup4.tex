@@ -60,6 +60,8 @@
 \clearpage
 
 \section{Introduction}
+The following writeup is based on Writeup 3 but with additional information regarding the character device, option to control speed, and option to set ``one-off`` or ``repeat`` modes.
+
 In the following section, we answer specific questions associated with the assignment and provide initial guidance for the TA to evaluate our work.
 \begin{enumerate}
     \item We believe that the main point of this assignment was to get familiar with manipulating the Linux kernel. This assignment also forced us to get comfortable working with and manipulating drivers for the Linux operating system that directly interact with hardware. Specifically it was focused on getting us to work with the Linux LED driver, which interacts with the LED\textquotesingle s on a Raspberry Pi. This assignment allowed us to manipulate a driver and see the results of our work being output to hardware in real time. This way we could easily test that our work was correct and our driver was functioning properly.
@@ -70,7 +72,7 @@ In the following section, we answer specific questions associated with the assig
         \item There is a thing called, \texttt{jiffies}, which all the delays must be converted to when passed to the timer. According to Linux MAN page, a jiffy defines the inverse of an update frequency of the kernel. The update frequency of a kernel varies with hardware platform and kernel versions. Converting delays to jiffies allows for consistent timing under different Linux kernels and platforms. This is one of the things we learned.
         \item Another thing we learned is configuring \texttt{Kconfig} file. When adding a configuration entry for our Morse code LED trigger, we also had to insert \texttt{default y}, so that when a \texttt{.config} is generated, the Morse code is enabled without us having to modify the generated \texttt{.config} file afterwards.
     \end{enumerate}
-    \item To evaluate and grade our work, the TA can follow the sections below, in chronological order, and replicate our Morse code LED trigger for their Raspberry Pi. If the TA already have the Linux Kernel installed, Raspbian Light setup, and the serial console operating, they can skip to section \ref{setup} and get right into section \ref{morse_compile} for testing our Morse Code LED trigger on their own Raspberry Pi. If the TA is experienced, they can review each section for legitimacy without replicating and contact Group 1 for a demo of the Morse code LED trigger.
+    \item To evaluate and grade our work, the TA can follow the sections below, in chronological order, and replicate our Morse code LED trigger for their Raspberry Pi. If the TA already have the Linux Kernel installed, Raspbian Light setup, and the serial console operating, they can get right into section \ref{morse_compile} for testing our Morse Code LED trigger on their own Raspberry Pi. If the TA is experienced, they can review each section for legitimacy without replicating and contact Group 1 for a demo of the Morse code LED trigger.
 \end{enumerate}
 
 \section{Required Technologies}
