@@ -17,17 +17,17 @@
 #include <linux/types.h>
 #include "../leds.h"
 
-#define FIRST_MINOR 0
-#define MINOR_CNT 1
+
+/*
+ -------------------------------------------------------------------------------
+ Structures
+ -------------------------------------------------------------------------------
+*/
 
 typedef struct
 {
     int status, dignity, ego;
 } msg_arg_t;
-
-#define MSG_GET_VARIABLES _IOR('q', 1, msg_arg_t *)
-#define MSG_CLR_VARIABLES _IO('q', 2)
-#define MSG_SET_VARIABLES _IOW('q', 3, msg_arg_t *)
 
 struct morse_trig_data {
     char* message;
@@ -38,6 +38,27 @@ struct morse_trig_data {
     unsigned int mode; // 0 - one-off; 1 - repeat
     struct timer_list timer;
 };
+
+
+/*
+ -------------------------------------------------------------------------------
+ Defines
+ -------------------------------------------------------------------------------
+*/
+
+#define FIRST_MINOR 0
+#define MINOR_CNT 1
+
+#define MSG_GET_VARIABLES _IOR('q', 1, msg_arg_t *)
+#define MSG_CLR_VARIABLES _IO('q', 2)
+#define MSG_SET_VARIABLES _IOW('q', 3, msg_arg_t *)
+
+
+/*
+ -------------------------------------------------------------------------------
+ Constants
+ -------------------------------------------------------------------------------
+*/
 
 const char* LETTER_TO_MORSE[] = {
     ".-", //A
@@ -97,11 +118,32 @@ const unsigned int DEFAULT_MODE = 1;
 const char* DEFAULT_MESSAGE = "Linux Operating Systems Group 1";
 
 
+/*
+ -------------------------------------------------------------------------------
+ Global Variables
+ -------------------------------------------------------------------------------
+*/
+
 static int panic_morses;
 static dev_t dev;
 static struct cdev c_dev;
 static struct class *cl;
 
+
+/*
+ -------------------------------------------------------------------------------
+ Prototypes
+ -------------------------------------------------------------------------------
+*/
+
+static void morse_trig_deactivate(struct led_classdev *led_cdev)
+
+
+/*
+ -------------------------------------------------------------------------------
+ Helper Functions
+ -------------------------------------------------------------------------------
+*/
 
 const char* char_to_morse(char c) {
     if (c >= 0x41 && c <= 0x5A) {
