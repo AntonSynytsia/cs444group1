@@ -255,18 +255,22 @@ static void led_morse_function(unsigned long data)
     if (letter == '\0' || letter == '\n') {
         // If finished processing last letter of the message, either:
 
-        // deactivate
+        // "deactivate"
         if (morse_data->mode == 0) {
-            morse_trig_deactivate(led_cdev);
-            return;
+            //~ led_set_brightness_nosleep(led_cdev, LED_OFF);
+            //~ morse_trig_deactivate(led_cdev);
+            //~ return;
+            delay = MESSAGE_DELAY;
         }
-
-        // set delay to word delay and restart
-        delay = MESSAGE_DELAY;
-        morse_data->indexL = 0;
-        morse_data->indexM = 0;
-        morse_data->delayM = 0;
+        else {
+            // set delay to word delay and restart
+            delay = MESSAGE_DELAY;
+            morse_data->indexL = 0;
+            morse_data->indexM = 0;
+            morse_data->delayM = 0;
+        }
         //printk(KERN_ALERT "... MESSAGE END\n");
+
     }
     else if (letter == ' ') {
         // If finished processing last letter of the word, set delay to word delay and increment letter index
