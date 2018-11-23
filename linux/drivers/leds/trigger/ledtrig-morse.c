@@ -100,6 +100,100 @@ const char* char_to_morse(char c) {
     }
 }
 
+
+
+
+static int my_open(struct inode *i, struct file *f)
+{
+    printk("CS444 Dummy driver open\r\n");
+    return 0;
+}
+static int my_close(struct inode *i, struct file *f)
+{
+    printk("CS444 Dummy driver close\r\n");
+    return 0;
+}
+
+static ssize_t dummy_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
+{
+    printk("CS444 Dummy driver read\r\n");
+    snprintf(buf, size, "Hey there, I'm a dummy!\r\n");
+    return strlen(buf);
+}
+
+static ssize_t dummy_write(struct file *file, const char __user *buf, size_t size, loff_t *ppos)
+{
+    char lcl_buf[64];
+
+    memset(lcl_buf, 0, sizeof(lcl_buf));
+
+    if (copy_from_user(lcl_buf, buf, min(size, sizeof(lcl_buf))))
+        {
+            return -EACCES;
+        }
+
+    printk("CS444 Dummy driver write %ld bytes: %s\r\n", size, lcl_buf);
+
+    return size;
+}
+
+static struct file_operations dummy_fops =
+{
+    .owner = THIS_MODULE,
+    .open = my_open,
+    .read = dummy_read,
+    .write = dummy_write,
+    .release = my_close
+};
+
+static int __init dummy_init(void)
+{
+    int ret;
+    struct device *dev_ret;
+
+    // Allocate the device
+    if ((ret = alloc_chrdev_region(&dev, FIRST_MINOR, MINOR_CNT, "cs444_dummy")) < 0)
+    {
+        return ret;
+    }
+
+    cdev_init(&c_dev, &dummy_fops);
+
+    if ((ret = cdev_add(&c_dev, dev, MINOR_CNT)) < 0)
+    {
+        return ret;
+    }
+
+    // Allocate the /dev device (/dev/cs444_dummy)
+    if (IS_ERR(cl = class_create(THIS_MODULE, "char")))
+    {
+        cdev_del(&c_dev);
+        unregister_chrdev_region(dev, MINOR_CNT);
+        return PTR_ERR(cl);
+    }
+    if (IS_ERR(dev_ret = device_create(cl, NULL, dev, NULL, "cs444_dummy")))
+    {
+        class_destroy(cl);
+        cdev_del(&c_dev);
+        unregister_chrdev_region(dev, MINOR_CNT);
+        return PTR_ERR(dev_ret);
+    }
+
+    printk("CS444 Dummy Driver has been loaded!\r\n");
+
+    return 0;
+}
+
+static void __exit dummy_exit(void)
+{
+    device_destroy(cl, dev);
+    class_destroy(cl);
+    cdev_del(&c_dev);
+    unregister_chrdev_region(dev, MINOR_CNT);
+}
+
+
+
 static void led_morse_function(unsigned long data)
 {
     struct led_classdev *led_cdev = (struct led_classdev *) data;
@@ -303,110 +397,21 @@ static int __init morse_trig_init(void)
                            &morse_panic_nb);
         register_reboot_notifier(&morse_reboot_nb);
     }
+
+    dummy_init();
+
     return rc;
 }
 
 static void __exit morse_trig_exit(void)
 {
+    dummy_exit();
+
     unregister_reboot_notifier(&morse_reboot_nb);
     atomic_notifier_chain_unregister(&panic_notifier_list,
                      &morse_panic_nb);
     led_trigger_unregister(&morse_led_trigger);
 }
-
-
-
-
- 
-static int my_open(struct inode *i, struct file *f)
-{
-    printk("CS444 Dummy driver open\r\n");
-    return 0;
-}
-static int my_close(struct inode *i, struct file *f)
-{
-    printk("CS444 Dummy driver close\r\n");
-    return 0;
-}
-
-static ssize_t dummy_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
-{
-    printk("CS444 Dummy driver read\r\n");
-    snprintf(buf, size, "Hey there, I'm a dummy!\r\n");
-    return strlen(buf);
-}
-
-static ssize_t dummy_write(struct file *file, const char __user *buf, size_t size, loff_t *ppos)
-{
-    char lcl_buf[64];
-
-    memset(lcl_buf, 0, sizeof(lcl_buf));
-
-    if (copy_from_user(lcl_buf, buf, min(size, sizeof(lcl_buf))))
-        {
-            return -EACCES;
-        }
-
-    printk("CS444 Dummy driver write %ld bytes: %s\r\n", size, lcl_buf);
-
-    return size;
-}
- 
-static struct file_operations dummy_fops =
-{
-    .owner = THIS_MODULE,
-    .open = my_open,
-    .read = dummy_read,
-    .write = dummy_write,
-    .release = my_close
-};
- 
-static int __init dummy_init(void)
-{
-    int ret;
-    struct device *dev_ret;
- 
-    // Allocate the device
-    if ((ret = alloc_chrdev_region(&dev, FIRST_MINOR, MINOR_CNT, "cs444_dummy")) < 0)
-    {
-        return ret;
-    }
- 
-    cdev_init(&c_dev, &dummy_fops);
- 
-    if ((ret = cdev_add(&c_dev, dev, MINOR_CNT)) < 0)
-    {
-        return ret;
-    }
-     
-    // Allocate the /dev device (/dev/cs444_dummy)
-    if (IS_ERR(cl = class_create(THIS_MODULE, "char")))
-    {
-        cdev_del(&c_dev);
-        unregister_chrdev_region(dev, MINOR_CNT);
-        return PTR_ERR(cl);
-    }
-    if (IS_ERR(dev_ret = device_create(cl, NULL, dev, NULL, "cs444_dummy")))
-    {
-        class_destroy(cl);
-        cdev_del(&c_dev);
-        unregister_chrdev_region(dev, MINOR_CNT);
-        return PTR_ERR(dev_ret);
-    }
-
-    printk("CS444 Dummy Driver has been loaded!\r\n");
- 
-    return 0;
-}
- 
-static void __exit dummy_exit(void)
-{
-    device_destroy(cl, dev);
-    class_destroy(cl);
-    cdev_del(&c_dev);
-    unregister_chrdev_region(dev, MINOR_CNT);
-}
-
 
 
 
