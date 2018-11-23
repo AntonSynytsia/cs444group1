@@ -472,15 +472,11 @@ static int __init morse_trig_init(void)
         register_reboot_notifier(&morse_reboot_nb);
     }
 
-    dummy_init();
-
     return rc;
 }
 
 static void __exit morse_trig_exit(void)
 {
-    dummy_exit();
-
     unregister_reboot_notifier(&morse_reboot_nb);
     atomic_notifier_chain_unregister(&panic_notifier_list,
                      &morse_panic_nb);
