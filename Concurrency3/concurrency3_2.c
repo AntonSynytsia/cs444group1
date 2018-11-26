@@ -127,8 +127,12 @@ struct Node{
 pthread_mutex_t insertion_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t deletion_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t search_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t size_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t flag_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 Node* head = NULL;
+unsigned int list_size = 0;
+int flag = 0; //0 means delete isnt working, 1 means it is working.
 
 //always inserts at the end of the list.
 void insert(){
@@ -141,37 +145,45 @@ void insert(){
         current = current->next;
     }
     current->next = new_node;
+    list_size += 1;
 }
 
-//always deletes from the end of the list
+//always deletes from anywhere in the list
 void delete(){
     Node* current = head;
-    //traverse until the end
-    while(current->next != NULL){
+    unsigned int rand_delete_node_index = our_rand_uint(0, list_size - 1);
+    //traverse until random node
+    unsigned int cur_index = 0;
+    while(cur_index != rand_delete_node_index){
         current = current->next;
+        cur_index+=1;
     }
     //set last element to null
     current = NULL;
 }
-
+//traverses whole list
 void search(){
-    Node* current = head;
+    /*Node* current = head;
     while(current->next != NULL){
         fprintf(stdout, "Reading %d\n", current->value);
         fflush(stdout);
         current = current->next;
-    }
+    }*/
+    fprintf(stdout, "READ\n");
+    fflush(stdout);
 }
 
 void* inserter(){
     while(true){
         //Acquire mutex
         pthread_mutex_lock(&insertion_mutex);
+        pthread_mutex_lock(&size_mutex);
         fprintf(stdout, "Locking insertion for inserter %02x\n", (unsigned)pthread_self());
         fflush(stdout);
         insert();
         fprintf(stdout, "Unlocking insertion for inserter %02x\n", (unsigned)pthread_self());
         fflush(stdout);
+        pthread_mutex_unlock(&size_mutex);
         pthread_mutex_unlock(&insertion_mutex);
         sleep(our_rand_uint(1, 5)); //inserter sleeps from 1-5 seconds
     }
@@ -182,11 +194,17 @@ void* deleter(){
         //Acquire search and insert mutex
         pthread_mutex_lock(&insertion_mutex);
         pthread_mutex_lock(&search_mutex);
+        pthread_mutex_lock(&size_mutex);
+        pthread_mutex_lock(&flag_mutex);
+        flag=1;
         fprintf(stdout, "Locking deletion for deleter %02x\n",(unsigned)pthread_self());
         fflush(stdout);
         delete();
         fprintf(stdout, "Unlocking deletion for deleter %02x\n", (unsigned)pthread_self());
         fflush(stdout);
+        flag = 0;
+        pthread_mutex_unlock(&flag_mutex);
+        pthread_mutex_unlock(&size_mutex);
         pthread_mutex_unlock(&insertion_mutex);
         pthread_mutex_unlock(&search_mutex);
         sleep(our_rand_uint(1,5)); //deleter sleeps from 1-5 seconds
@@ -195,14 +213,14 @@ void* deleter(){
 
 void* searcher(){
     while(true){
-        pthread_mutex_lock(&search_mutex);
-        pthread_mutex_unlock(&search_mutex);
-        fprintf(stdout, "Searcher %02x is searching...\n", (unsigned)pthread_self());
-        fflush(stdout);
-        search();
-        fprintf(stdout, "Searcher %02x is done searching\n", (unsigned)pthread_self());
-        fflush(stdout);
-        sleep(our_rand_uint(1,2));
+        if(flag == 0){
+            fprintf(stdout, "Searcher %02x is searching...\n", (unsigned)pthread_self());
+            fflush(stdout);
+            search();
+            fprintf(stdout, "Searcher %02x is done searching\n", (unsigned)pthread_self());
+            fflush(stdout);
+            sleep(our_rand_uint(1,2));
+        }
     }
 }
 
@@ -256,6 +274,7 @@ int main(){
     pthread_mutex_destroy(&insertion_mutex);
     pthread_mutex_destroy(&deletion_mutex);
     pthread_mutex_destroy(&search_mutex);
+    pthread_mutex_destroy(&size_mutex);
     
     //TODO free list
     // Return success
