@@ -1,0 +1,1 @@
+mod_timer(&morse_data->timer, jiffies + msecs_to_jiffies(delay * morse_data->speed));
