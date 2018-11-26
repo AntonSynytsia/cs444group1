@@ -160,6 +160,7 @@ void delete(){
     }
     //set last element to null
     current = NULL;
+    list_size -= 1;
 }
 //traverses whole list
 void search(){
